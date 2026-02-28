@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "ReviewReply AI",
-  "version": "1.0.0",
-  "description": "AI-powered review replies, injected directly into Google Business Profile.",
+  "version": "1.1.0",
+  "description": "AI-powered review replies for Google Maps business reviews.",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": [
-    "https://business.google.com/*",
+    "https://www.google.com/maps/*",
+    "https://maps.google.com/*",
     "http://localhost:5555/*"
   ],
   "action": {
@@ -27,7 +28,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://business.google.com/*",
+        "https://www.google.com/maps/*",
+        "https://maps.google.com/*",
         "http://localhost:5555/*"
       ],
       "js": ["content.js"],

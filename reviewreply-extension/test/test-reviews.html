@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Google Business Profile — Reviews (Test Simulator)</title>
+    <title>Google Maps — Reviews (Test Simulator)</title>
     <style>
       * {
         margin: 0;
@@ -11,217 +11,303 @@
         box-sizing: border-box;
       }
       body {
-        font-family: "Google Sans", Roboto, Arial, sans-serif;
-        background: #f8f9fa;
+        font-family: Roboto, "Google Sans", Arial, sans-serif;
+        background: #e8eaed;
         color: #202124;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
       }
 
-      /* ─── Top Nav (fake GBP header) ─── */
-      .top-nav {
+      /* ─── Google Maps Left Panel ─── */
+      .maps-panel {
+        width: 420px;
+        height: 100vh;
         background: white;
-        border-bottom: 1px solid #dadce0;
-        padding: 12px 24px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .top-nav .logo {
-        font-size: 20px;
-        font-weight: 500;
-        color: #5f6368;
-      }
-      .top-nav .logo span {
-        color: #1a73e8;
-      }
-      .top-nav .biz-name {
-        font-size: 14px;
-        color: #202124;
-        font-weight: 500;
-        margin-left: auto;
-      }
-
-      /* ─── Side nav ─── */
-      .layout {
-        display: flex;
-        min-height: calc(100vh - 52px);
-      }
-      .sidebar {
-        width: 240px;
-        background: white;
+        overflow-y: auto;
         border-right: 1px solid #dadce0;
-        padding: 16px 0;
-      }
-      .sidebar a {
-        display: block;
-        padding: 10px 24px;
-        color: #5f6368;
-        text-decoration: none;
-        font-size: 14px;
-      }
-      .sidebar a.active {
-        color: #1a73e8;
-        background: #e8f0fe;
-        font-weight: 500;
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
       }
 
-      /* ─── Main content ─── */
-      .main {
-        flex: 1;
-        padding: 24px 32px;
-        max-width: 900px;
+      /* ─── Business Header ─── */
+      .biz-header {
+        padding: 20px;
+        border-bottom: 1px solid #e8eaed;
       }
-      .page-title {
+      .biz-name {
         font-size: 22px;
         font-weight: 400;
+        color: #202124;
+        margin-bottom: 4px;
+      }
+      .biz-category {
+        font-size: 14px;
+        color: #70757a;
         margin-bottom: 8px;
       }
-      .page-subtitle {
+      .biz-rating-summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .biz-rating-number {
         font-size: 14px;
-        color: #5f6368;
-        margin-bottom: 24px;
+        font-weight: 500;
+        color: #202124;
+      }
+      .biz-stars-summary {
+        display: flex;
+        gap: 1px;
+      }
+      .biz-stars-summary .star {
+        font-size: 14px;
+        color: #fbbc04;
+      }
+      .biz-review-count {
+        font-size: 14px;
+        color: #70757a;
       }
 
-      /* ─── Review Cards ─── */
-      .review-card {
-        background: white;
-        border: 1px solid #dadce0;
-        border-radius: 8px;
-        padding: 20px 24px;
-        margin-bottom: 16px;
+      /* ─── Tab Bar ─── */
+      .tab-bar {
+        display: flex;
+        border-bottom: 1px solid #e8eaed;
+        padding: 0 12px;
       }
-      .review-header {
+      .tab {
+        padding: 14px 16px;
+        font-size: 14px;
+        color: #70757a;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        font-weight: 500;
+      }
+      .tab.active {
+        color: #1a73e8;
+        border-bottom-color: #1a73e8;
+      }
+
+      /* ─── Review Sort Bar ─── */
+      .sort-bar {
+        padding: 16px 20px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .sort-bar .review-total {
+        font-size: 14px;
+        color: #202124;
+        font-weight: 500;
+      }
+      .sort-bar select {
+        font-size: 13px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 6px 10px;
+        color: #202124;
+        background: white;
+      }
+
+      /* ─── Review Card (mimics Google Maps DOM) ─── */
+      .maps-review {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e8eaed;
+      }
+      .review-author-row {
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
       }
-      .reviewer-avatar {
-        width: 40px;
-        height: 40px;
+      .author-avatar {
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         background: #e8eaed;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
+        font-size: 16px;
         color: #5f6368;
         font-weight: 500;
+        overflow: hidden;
       }
-      .reviewer-info {
+      .author-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .author-info {
         flex: 1;
       }
-      .reviewer-name {
-        font-weight: 500;
+      .author-name {
         font-size: 14px;
+        font-weight: 500;
         color: #202124;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        text-align: left;
       }
-      .review-date {
+      .author-name:hover {
+        text-decoration: underline;
+      }
+      .author-details {
         font-size: 12px;
-        color: #5f6368;
+        color: #70757a;
       }
 
-      /* ─── Stars ─── */
-      .stars {
+      /* Stars (Google Maps style) */
+      .review-stars-row {
         display: flex;
-        gap: 2px;
-        margin-bottom: 10px;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
       }
-      .star {
-        font-size: 18px;
-        color: #dadce0;
+      .gm-stars {
+        display: inline-flex;
+        gap: 0;
       }
-      .star.filled {
+      .gm-stars .gm-star {
+        width: 16px;
+        height: 16px;
+      }
+      .gm-star-filled {
         color: #fbbc04;
+        font-size: 15px;
+        line-height: 16px;
+      }
+      .gm-star-empty {
+        color: #dadce0;
+        font-size: 15px;
+        line-height: 16px;
+      }
+      .review-time {
+        font-size: 12px;
+        color: #70757a;
       }
 
-      /* ─── Review text ─── */
-      .review-text {
+      /* Review text */
+      .review-text-content {
         font-size: 14px;
         line-height: 1.6;
         color: #202124;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
       }
 
-      /* ─── Reply area ─── */
-      .reply-section {
-        border-top: 1px solid #e8eaed;
-        padding-top: 16px;
+      /* Review actions */
+      .review-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
       }
-      .reply-section label {
+      .review-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        border: none;
+        background: none;
+        color: #70757a;
+        font-size: 13px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .review-action-btn:hover {
+        background: #f1f3f4;
+        color: #202124;
+      }
+
+      /* Reply section (owner view) */
+      .owner-reply-section {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e8eaed;
+      }
+      .reply-label {
         font-size: 13px;
         font-weight: 500;
         color: #5f6368;
         display: block;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
       }
-      .reply-textarea {
+      .maps-reply-textarea {
         width: 100%;
-        min-height: 80px;
-        padding: 12px;
+        min-height: 70px;
+        padding: 10px 12px;
         border: 1px solid #dadce0;
-        border-radius: 4px;
-        font-family: inherit;
+        border-radius: 8px;
+        font-family: Roboto, Arial, sans-serif;
         font-size: 14px;
         resize: vertical;
         outline: none;
+        color: #202124;
       }
-      .reply-textarea:focus {
+      .maps-reply-textarea:focus {
         border-color: #1a73e8;
+        box-shadow: 0 0 0 1px #1a73e8;
       }
-      .reply-actions {
+      .maps-reply-textarea::placeholder {
+        color: #9aa0a6;
+      }
+      .reply-btn-row {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 8px;
       }
-      .btn-reply {
-        padding: 8px 24px;
-        border-radius: 4px;
+      .btn-maps {
+        padding: 8px 20px;
+        border-radius: 20px;
         font-size: 14px;
         font-weight: 500;
         cursor: pointer;
         border: none;
+        font-family: inherit;
       }
-      .btn-reply.primary {
+      .btn-maps.primary {
         background: #1a73e8;
         color: white;
       }
-      .btn-reply.primary:hover {
+      .btn-maps.primary:hover {
         background: #1765cc;
       }
-      .btn-reply.secondary {
+      .btn-maps.secondary {
         background: white;
         color: #1a73e8;
         border: 1px solid #dadce0;
       }
-
-      /* ─── Existing reply ─── */
-      .existing-reply {
+      .btn-maps.secondary:hover {
         background: #f8f9fa;
-        border-radius: 8px;
-        padding: 12px 16px;
-        margin-top: 12px;
-      }
-      .existing-reply .reply-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: #5f6368;
-        margin-bottom: 6px;
-      }
-      .existing-reply .reply-text {
-        font-size: 13px;
-        color: #202124;
-        line-height: 1.5;
       }
 
-      /* ─── Info banner ─── */
+      /* ─── Fake Map Area ─── */
+      .maps-area {
+        flex: 1;
+        background: #f0efe9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .maps-area .fake-map-text {
+        color: #9aa0a6;
+        font-size: 18px;
+        text-align: center;
+      }
+      .maps-area .fake-map-text span {
+        display: block;
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      /* ─── Test banner ─── */
       .test-banner {
         background: #fef7e0;
-        border: 1px solid #fdd835;
-        border-radius: 8px;
-        padding: 12px 20px;
-        margin-bottom: 20px;
-        font-size: 13px;
+        border-bottom: 2px solid #fbbc04;
+        padding: 10px 20px;
+        font-size: 12px;
         color: #5f4339;
         display: flex;
         align-items: center;
@@ -230,297 +316,417 @@
       .test-banner strong {
         color: #e65100;
       }
+
+      /* Scrollbar styling */
+      .maps-panel::-webkit-scrollbar {
+        width: 6px;
+      }
+      .maps-panel::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .maps-panel::-webkit-scrollbar-thumb {
+        background: #dadce0;
+        border-radius: 3px;
+      }
+      .maps-panel::-webkit-scrollbar-thumb:hover {
+        background: #bdc1c6;
+      }
     </style>
   </head>
   <body>
-    <!-- Fake GBP header -->
-    <div class="top-nav">
-      <div class="logo"><span>Google</span> Business Profile</div>
-      <div class="biz-name">ReviewReply Test Business</div>
-    </div>
-
-    <div class="layout">
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <a href="#">Home</a>
-        <a href="#">Posts</a>
-        <a href="#" class="active">Reviews</a>
-        <a href="#">Messages</a>
-        <a href="#">Photos</a>
-        <a href="#">Performance</a>
+    <!-- Left Panel (Reviews) -->
+    <div class="maps-panel">
+      <!-- Test mode banner -->
+      <div class="test-banner">
+        ⚠️ <strong>TEST</strong> — Google Maps review simulator. Extension
+        should inject "✨ Generate Reply" buttons below.
       </div>
 
-      <!-- Main Content -->
-      <div class="main">
-        <h1 class="page-title">Reviews</h1>
-        <p class="page-subtitle">7 reviews • 4.1 average rating</p>
-
-        <div class="test-banner">
-          ⚠️ <strong>TEST MODE</strong> — This page simulates Google Business
-          Profile reviews for extension testing. The ReviewReply AI content
-          script should inject "✨ Generate Reply" buttons below.
+      <!-- Business Header -->
+      <div class="biz-header">
+        <div class="biz-name">Booming Gym</div>
+        <div class="biz-category">Gym · Fitness center</div>
+        <div class="biz-rating-summary">
+          <span class="biz-rating-number">4.1</span>
+          <div class="biz-stars-summary">
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star" style="color: #dadce0">★</span>
+          </div>
+          <span class="biz-review-count">(412 reviews)</span>
         </div>
+      </div>
 
-        <!-- ─── Review 1: 5 stars, positive ─── -->
-        <div class="review-card" data-review-id="review-001">
-          <div class="review-header">
-            <div class="reviewer-avatar">J</div>
-            <div class="reviewer-info">
-              <div class="reviewer-name"><strong>John Martinez</strong></div>
-              <div class="review-date">2 days ago</div>
-            </div>
-          </div>
-          <div class="stars" aria-label="Rated 5 out of 5 stars">
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-          </div>
-          <div class="review-text">
-            <p>
-              Absolutely incredible experience! The staff was extremely
-              welcoming from the moment we walked in. The attention to detail is
-              what sets this place apart. Will definitely be recommending to all
-              my friends and family. Keep up the amazing work!
-            </p>
-          </div>
-          <div class="reply-section">
-            <label>Your reply</label>
-            <textarea
-              class="reply-textarea"
-              placeholder="Write a reply..."
-            ></textarea>
-            <div class="reply-actions">
-              <button class="btn-reply secondary">Cancel</button>
-              <button class="btn-reply primary" role="button">Reply</button>
-            </div>
-          </div>
-        </div>
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <div class="tab">Overview</div>
+        <div class="tab active">Reviews</div>
+        <div class="tab">About</div>
+      </div>
 
-        <!-- ─── Review 2: 1 star, negative ─── -->
-        <div class="review-card" data-review-id="review-002">
-          <div class="review-header">
-            <div class="reviewer-avatar">S</div>
-            <div class="reviewer-info">
-              <div class="reviewer-name"><strong>Sarah Thompson</strong></div>
-              <div class="review-date">5 days ago</div>
-            </div>
-          </div>
-          <div class="stars" aria-label="Rated 1 out of 5 stars">
-            <span class="star filled">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
-          </div>
-          <div class="review-text">
-            <p>
-              Very disappointed with my visit. I waited over 45 minutes despite
-              having a reservation. When I finally got attended to, the service
-              was rushed and dismissive. The quality did not match the price at
-              all. I expected much better based on the online reviews. Will not
-              be returning.
-            </p>
-          </div>
-          <div class="reply-section">
-            <label>Your reply</label>
-            <textarea
-              class="reply-textarea"
-              placeholder="Write a reply..."
-            ></textarea>
-            <div class="reply-actions">
-              <button class="btn-reply secondary">Cancel</button>
-              <button class="btn-reply primary" role="button">Reply</button>
+      <!-- Sort bar -->
+      <div class="sort-bar">
+        <span class="review-total">412 reviews</span>
+        <select>
+          <option>Most relevant</option>
+          <option>Newest</option>
+          <option>Highest</option>
+          <option>Lowest</option>
+        </select>
+      </div>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- REVIEWS — using Google Maps DOM patterns    -->
+      <!-- ═══════════════════════════════════════════ -->
+
+      <!-- Review 1: 5 stars, positive -->
+      <div
+        class="maps-review"
+        data-review-id="ChZDSUhNMG9nS0VJQ0FnSURfcm9TbkFR"
+      >
+        <div class="review-author-row">
+          <div class="author-avatar">J</div>
+          <div class="author-info">
+            <button class="author-name" data-href="/maps/contrib/103847226484">
+              John Martinez
+            </button>
+            <div class="author-details">
+              Local Guide · 23 reviews · 8 photos
             </div>
           </div>
         </div>
+        <div class="review-stars-row">
+          <span role="img" aria-label="5 stars" class="gm-stars">
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+          </span>
+          <span class="review-time">2 days ago</span>
+        </div>
+        <div class="review-text-content">
+          Best gym I've ever been to! The equipment is top-notch and always
+          clean. The trainers here actually care about your progress — my
+          trainer Marcus put together a custom plan for me and checks in every
+          week. Love the energy here, everyone is supportive and motivating. The
+          smoothie bar is a nice bonus too. 10/10 would recommend to anyone
+          serious about fitness.
+        </div>
+        <div class="review-actions">
+          <button class="review-action-btn">👍 Helpful</button>
+        </div>
+        <div class="owner-reply-section">
+          <label class="reply-label">Your reply</label>
+          <textarea
+            class="maps-reply-textarea"
+            placeholder="Reply as Booming Gym..."
+          ></textarea>
+          <div class="reply-btn-row">
+            <button class="btn-maps secondary">Cancel</button>
+            <button class="btn-maps primary" role="button">Reply</button>
+          </div>
+        </div>
+      </div>
 
-        <!-- ─── Review 3: 3 stars, neutral ─── -->
-        <div class="review-card" data-review-id="review-003">
-          <div class="review-header">
-            <div class="reviewer-avatar">M</div>
-            <div class="reviewer-info">
-              <div class="reviewer-name"><strong>Mike Chen</strong></div>
-              <div class="review-date">1 week ago</div>
-            </div>
+      <!-- Review 2: 1 star, angry -->
+      <div
+        class="maps-review"
+        data-review-id="ChZDSUhNMG9nS0VJQ0FnSUQtcVlhY0JR"
+      >
+        <div class="review-author-row">
+          <div class="author-avatar">S</div>
+          <div class="author-info">
+            <button class="author-name" data-href="/maps/contrib/109283746152">
+              Sarah Thompson
+            </button>
+            <div class="author-details">5 reviews</div>
           </div>
-          <div class="stars" aria-label="Rated 3 out of 5 stars">
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
+        </div>
+        <div class="review-stars-row">
+          <span role="img" aria-label="1 stars" class="gm-stars">
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+          </span>
+          <span class="review-time">5 days ago</span>
+        </div>
+        <div class="review-text-content">
+          Absolutely terrible experience. I signed up for the monthly membership
+          and was charged twice. When I tried to talk to the front desk about it
+          they were dismissive and told me to "email billing." I've sent 3
+          emails and no response. The locker room is also disgusting — broken
+          lockers, no soap in dispensers. Don't waste your money here. Going to
+          dispute the charges with my bank.
+        </div>
+        <div class="review-actions">
+          <button class="review-action-btn">👍 Helpful</button>
+        </div>
+        <div class="owner-reply-section">
+          <label class="reply-label">Your reply</label>
+          <textarea
+            class="maps-reply-textarea"
+            placeholder="Reply as Booming Gym..."
+          ></textarea>
+          <div class="reply-btn-row">
+            <button class="btn-maps secondary">Cancel</button>
+            <button class="btn-maps primary" role="button">Reply</button>
           </div>
-          <div class="review-text">
-            <p>
-              It was okay, nothing special. The location is convenient and
-              parking is easy, which is a plus. The facility itself is clean but
-              could use some updating. Staff was friendly enough. Pricing seems
-              a bit high for what you get. Might come back if there's a deal.
-            </p>
-          </div>
-          <div class="reply-section">
-            <label>Your reply</label>
-            <textarea
-              class="reply-textarea"
-              placeholder="Write a reply..."
-            ></textarea>
-            <div class="reply-actions">
-              <button class="btn-reply secondary">Cancel</button>
-              <button class="btn-reply primary" role="button">Reply</button>
+        </div>
+      </div>
+
+      <!-- Review 3: 3 stars, neutral -->
+      <div
+        class="maps-review"
+        data-review-id="ChZDSUhNMG9nS0VJQ0FnSUQtcll1ZUJR"
+      >
+        <div class="review-author-row">
+          <div class="author-avatar">M</div>
+          <div class="author-info">
+            <button class="author-name" data-href="/maps/contrib/104562738491">
+              Mike Chen
+            </button>
+            <div class="author-details">
+              Local Guide · 67 reviews · 31 photos
             </div>
           </div>
         </div>
+        <div class="review-stars-row">
+          <span role="img" aria-label="3 stars" class="gm-stars">
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+          </span>
+          <span class="review-time">1 week ago</span>
+        </div>
+        <div class="review-text-content">
+          Decent gym, nothing special. They have a good selection of free
+          weights and machines. Cardio section is a bit cramped though. The big
+          issue is overcrowding — peak hours (5-7 PM) are nearly impossible to
+          get a squat rack. Off-peak hours are fine. Cleanliness is average.
+          Pricing is fair for the area. Would be 4 stars if they expanded the
+          floor space.
+        </div>
+        <div class="review-actions">
+          <button class="review-action-btn">👍 Helpful</button>
+        </div>
+        <div class="owner-reply-section">
+          <label class="reply-label">Your reply</label>
+          <textarea
+            class="maps-reply-textarea"
+            placeholder="Reply as Booming Gym..."
+          ></textarea>
+          <div class="reply-btn-row">
+            <button class="btn-maps secondary">Cancel</button>
+            <button class="btn-maps primary" role="button">Reply</button>
+          </div>
+        </div>
+      </div>
 
-        <!-- ─── Review 4: 5 stars, short ─── -->
-        <div class="review-card" data-review-id="review-004">
-          <div class="review-header">
-            <div class="reviewer-avatar">A</div>
-            <div class="reviewer-info">
-              <div class="reviewer-name"><strong>Amanda Davis</strong></div>
-              <div class="review-date">2 weeks ago</div>
-            </div>
+      <!-- Review 4: 5 stars, short -->
+      <div
+        class="maps-review"
+        data-review-id="ChZDSUhNMG9nS0VJQ0FnSUQtcVl1YUJR"
+      >
+        <div class="review-author-row">
+          <div class="author-avatar">A</div>
+          <div class="author-info">
+            <button class="author-name" data-href="/maps/contrib/107382946152">
+              Amanda Davis
+            </button>
+            <div class="author-details">12 reviews · 3 photos</div>
           </div>
-          <div class="stars" aria-label="Rated 5 out of 5 stars">
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
+        </div>
+        <div class="review-stars-row">
+          <span role="img" aria-label="5 stars" class="gm-stars">
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+          </span>
+          <span class="review-time">2 weeks ago</span>
+        </div>
+        <div class="review-text-content">
+          Love this gym!! Been a member for over a year. The group fitness
+          classes (especially the HIIT class with Coach Tina) are next level.
+          Super motivating environment. Worth every penny of the membership.
+        </div>
+        <div class="review-actions">
+          <button class="review-action-btn">👍 Helpful</button>
+        </div>
+        <div class="owner-reply-section">
+          <label class="reply-label">Your reply</label>
+          <textarea
+            class="maps-reply-textarea"
+            placeholder="Reply as Booming Gym..."
+          ></textarea>
+          <div class="reply-btn-row">
+            <button class="btn-maps secondary">Cancel</button>
+            <button class="btn-maps primary" role="button">Reply</button>
           </div>
-          <div class="review-text">
-            <p>
-              Love this place! Been coming here for over a year now and the
-              quality has only gotten better. The team really goes above and
-              beyond every single time.
-            </p>
+        </div>
+      </div>
+
+      <!-- Review 5: 2 stars -->
+      <div
+        class="maps-review"
+        data-review-id="ChZDSUhNMG9nS0VJQ0FnSUQtcFl1WUJR"
+      >
+        <div class="review-author-row">
+          <div class="author-avatar">R</div>
+          <div class="author-info">
+            <button class="author-name" data-href="/maps/contrib/110293847561">
+              Robert Wilson
+            </button>
+            <div class="author-details">3 reviews</div>
           </div>
-          <div class="reply-section">
-            <label>Your reply</label>
-            <textarea
-              class="reply-textarea"
-              placeholder="Write a reply..."
-            ></textarea>
-            <div class="reply-actions">
-              <button class="btn-reply secondary">Cancel</button>
-              <button class="btn-reply primary" role="button">Reply</button>
+        </div>
+        <div class="review-stars-row">
+          <span role="img" aria-label="2 stars" class="gm-stars">
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+          </span>
+          <span class="review-time">3 weeks ago</span>
+        </div>
+        <div class="review-text-content">
+          Overpriced for what you get. The equipment is OK but half the cable
+          machines were broken when I went. The personal training upsell is
+          really aggressive — can't walk 5 feet without someone trying to sell
+          you sessions. Air conditioning was barely working during my visit. Not
+          impressed.
+        </div>
+        <div class="review-actions">
+          <button class="review-action-btn">👍 Helpful</button>
+        </div>
+        <div class="owner-reply-section">
+          <label class="reply-label">Your reply</label>
+          <textarea
+            class="maps-reply-textarea"
+            placeholder="Reply as Booming Gym..."
+          ></textarea>
+          <div class="reply-btn-row">
+            <button class="btn-maps secondary">Cancel</button>
+            <button class="btn-maps primary" role="button">Reply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Review 6: 4 stars -->
+      <div
+        class="maps-review"
+        data-review-id="ChZDSUhNMG9nS0VJQ0FnSUQtcFlFYUJR"
+      >
+        <div class="review-author-row">
+          <div class="author-avatar">L</div>
+          <div class="author-info">
+            <button class="author-name" data-href="/maps/contrib/108472635194">
+              Lisa Park
+            </button>
+            <div class="author-details">
+              Local Guide · 142 reviews · 89 photos
             </div>
           </div>
         </div>
-
-        <!-- ─── Review 5: 2 stars, already replied ─── -->
-        <div class="review-card" data-review-id="review-005">
-          <div class="review-header">
-            <div class="reviewer-avatar">R</div>
-            <div class="reviewer-info">
-              <div class="reviewer-name"><strong>Robert Wilson</strong></div>
-              <div class="review-date">3 weeks ago</div>
-            </div>
-          </div>
-          <div class="stars" aria-label="Rated 2 out of 5 stars">
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
-          </div>
-          <div class="review-text">
-            <p>
-              Not great. The facility was cold and understaffed. Had to wait a
-              long time and nobody seemed to care. The equipment in the back
-              area was outdated. For the money they charge, I expected a much
-              better experience.
-            </p>
-          </div>
-          <div class="reply-section">
-            <label>Your reply</label>
-            <textarea
-              class="reply-textarea"
-              placeholder="Write a reply..."
-            ></textarea>
-            <div class="reply-actions">
-              <button class="btn-reply secondary">Cancel</button>
-              <button class="btn-reply primary" role="button">Reply</button>
-            </div>
+        <div class="review-stars-row">
+          <span role="img" aria-label="4 stars" class="gm-stars">
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-empty">★</span>
+          </span>
+          <span class="review-time">1 month ago</span>
+        </div>
+        <div class="review-text-content">
+          Great gym overall. Really clean, good variety of equipment, and the
+          staff is friendly. I appreciate that they have a women's-only section
+          too. Only knocking off one star because the parking lot is tiny — I've
+          had to circle for spots multiple times. They could also use more foam
+          rollers in the stretching area. But overall very satisfied with my
+          membership.
+        </div>
+        <div class="review-actions">
+          <button class="review-action-btn">👍 Helpful</button>
+        </div>
+        <div class="owner-reply-section">
+          <label class="reply-label">Your reply</label>
+          <textarea
+            class="maps-reply-textarea"
+            placeholder="Reply as Booming Gym..."
+          ></textarea>
+          <div class="reply-btn-row">
+            <button class="btn-maps secondary">Cancel</button>
+            <button class="btn-maps primary" role="button">Reply</button>
           </div>
         </div>
+      </div>
 
-        <!-- ─── Review 6: 4 stars ─── -->
-        <div class="review-card" data-review-id="review-006">
-          <div class="review-header">
-            <div class="reviewer-avatar">L</div>
-            <div class="reviewer-info">
-              <div class="reviewer-name"><strong>Lisa Park</strong></div>
-              <div class="review-date">1 month ago</div>
-            </div>
-          </div>
-          <div class="stars" aria-label="Rated 4 out of 5 stars">
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star filled">★</span>
-            <span class="star">★</span>
-          </div>
-          <div class="review-text">
-            <p>
-              Really enjoyed my experience here. The staff was knowledgeable and
-              patient with all my questions. The only reason I'm not giving 5
-              stars is the parking situation — it can get really crowded on
-              weekends. But the service itself is top-notch and I'll definitely
-              be back.
-            </p>
-          </div>
-          <div class="reply-section">
-            <label>Your reply</label>
-            <textarea
-              class="reply-textarea"
-              placeholder="Write a reply..."
-            ></textarea>
-            <div class="reply-actions">
-              <button class="btn-reply secondary">Cancel</button>
-              <button class="btn-reply primary" role="button">Reply</button>
-            </div>
+      <!-- Review 7: 1 star, furious -->
+      <div
+        class="maps-review"
+        data-review-id="ChZDSUhNMG9nS0VJQ0FnSUQtcFlfYUJR"
+      >
+        <div class="review-author-row">
+          <div class="author-avatar">D</div>
+          <div class="author-info">
+            <button class="author-name" data-href="/maps/contrib/106192837465">
+              David Kim
+            </button>
+            <div class="author-details">8 reviews</div>
           </div>
         </div>
-
-        <!-- ─── Review 7: 1 star, angry ─── -->
-        <div class="review-card" data-review-id="review-007">
-          <div class="review-header">
-            <div class="reviewer-avatar">D</div>
-            <div class="reviewer-info">
-              <div class="reviewer-name"><strong>David Kim</strong></div>
-              <div class="review-date">1 month ago</div>
-            </div>
-          </div>
-          <div class="stars" aria-label="Rated 1 out of 5 stars">
-            <span class="star filled">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
-            <span class="star">★</span>
-          </div>
-          <div class="review-text">
-            <p>
-              Complete waste of money and time. Booked online, showed up, and
-              they had no record of my appointment. The person at the front desk
-              was rude about it too. Then they tried to squeeze me in but the
-              quality of service was terrible — clearly rushed. Never again.
-              Save your money and go somewhere else.
-            </p>
-          </div>
-          <div class="reply-section">
-            <label>Your reply</label>
-            <textarea
-              class="reply-textarea"
-              placeholder="Write a reply..."
-            ></textarea>
-            <div class="reply-actions">
-              <button class="btn-reply secondary">Cancel</button>
-              <button class="btn-reply primary" role="button">Reply</button>
-            </div>
+        <div class="review-stars-row">
+          <span role="img" aria-label="1 stars" class="gm-stars">
+            <span class="gm-star-filled">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+            <span class="gm-star-empty">★</span>
+          </span>
+          <span class="review-time">1 month ago</span>
+        </div>
+        <div class="review-text-content">
+          Signed up for a "free trial" and they charged my card $89 the next day
+          with no warning. The contract is buried in fine print. Tried to cancel
+          and they said there's a 30-day notice period AND a $50 cancellation
+          fee. This is borderline scam behavior. The gym itself is mediocre at
+          best. Save yourself the headache and go literally anywhere else.
+        </div>
+        <div class="review-actions">
+          <button class="review-action-btn">👍 Helpful</button>
+        </div>
+        <div class="owner-reply-section">
+          <label class="reply-label">Your reply</label>
+          <textarea
+            class="maps-reply-textarea"
+            placeholder="Reply as Booming Gym..."
+          ></textarea>
+          <div class="reply-btn-row">
+            <button class="btn-maps secondary">Cancel</button>
+            <button class="btn-maps primary" role="button">Reply</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Fake Map Display (right side) -->
+    <div class="maps-area">
+      <div class="fake-map-text">
+        🗺️ Google Maps
+        <span
+          >This area would show the map. The extension operates in the left
+          panel.</span
+        >
       </div>
     </div>
   </body>

@@ -1,20 +1,23 @@
 // ─────────────────────────────────────────────
 // ReviewReply AI — Content Script
-// Injected into https://business.google.com/*
+// Injected into Google Maps (google.com/maps/*)
 // ─────────────────────────────────────────────
 
 const RR_API_URL = "http://localhost:3000";
-const DEBOUNCE_MS = 500;
+const DEBOUNCE_MS = 600;
 
 let debounceTimer = null;
 let lastUrl = location.href;
 
 // ─── Entry Point ─────────────────────────────
 function main() {
-  // Run injection immediately for any reviews already on the page
+  console.log("[ReviewReply] Content script loaded on:", location.hostname);
+
+  // Initial injection pass
   scheduleInjection();
 
-  // Watch for DOM changes (GBP is a React SPA — reviews load async)
+  // Google Maps is a heavy SPA — reviews load lazily via AJAX.
+  // We watch the DOM for any new nodes (review cards appearing)
   const observer = new MutationObserver(() => {
     scheduleInjection();
   });
@@ -24,10 +27,11 @@ function main() {
     subtree: true,
   });
 
-  // Watch for SPA URL changes (no full page reload)
+  // Also watch for SPA URL changes (no full page reload in Maps)
   setInterval(() => {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
+      console.log("[ReviewReply] URL changed, re-scanning...");
       scheduleInjection();
     }
   }, 1000);
@@ -43,76 +47,73 @@ function scheduleInjection() {
 
 // ─── Find and inject buttons into reviews ────
 function injectButtons() {
-  // Google Business Profile review containers
-  // These selectors target the review management page
-  // GBP uses dynamic class names, so we look for structural patterns
-  
-  // Find all review containers — look for elements that contain review text
-  // and reply areas. GBP typically uses specific ARIA roles and data attributes.
   const reviewContainers = findReviewContainers();
 
+  if (reviewContainers.length > 0) {
+    console.log(`[ReviewReply] Found ${reviewContainers.length} review(s)`);
+  }
+
   reviewContainers.forEach((container) => {
-    // Skip if already injected
+    // Skip if we already injected a button
     if (container.dataset.rrInjected === "true") return;
 
     const reviewData = extractReviewData(container);
     if (!reviewData) return;
 
-    const replyArea = findReplyArea(container);
-    if (!replyArea) return;
-
-    injectGenerateButton(container, replyArea, reviewData);
+    injectGenerateButton(container, reviewData);
     container.dataset.rrInjected = "true";
   });
 }
 
 // ─── Find review containers on the page ──────
+// Uses a layered strategy for resilience against DOM changes
 function findReviewContainers() {
-  // Strategy: look for common GBP review page patterns
-  // The review page shows cards with reviewer info, star ratings, and reply boxes
-  
-  // Try multiple selector strategies for resilience
-  const selectors = [
-    // GBP review cards typically have role or specific structure
-    '[data-review-id]',
-    '.review-card',
-    // Fallback: look for containers with star ratings and reply buttons
-    '[aria-label*="star"]',
-    '[aria-label*="Star"]',
-    '[aria-label*="rated"]',
-    '[aria-label*="Rated"]',
+  // ── Strategy 1: data-review-id (most reliable for Google Maps)
+  // Google Maps assigns a unique Base64 data-review-id to every review card.
+  let containers = document.querySelectorAll("[data-review-id]");
+  if (containers.length > 0) return Array.from(containers);
+
+  // ── Strategy 2: .review-card (test page / custom pages)
+  containers = document.querySelectorAll(".review-card");
+  if (containers.length > 0) return Array.from(containers);
+
+  // ── Strategy 3: Heuristic — find star rating elements & walk up
+  // Stars on Google Maps use role="img" with aria-label like "5 stars"
+  // Our test page uses .stars with aria-label "Rated X out of 5 stars"
+  const starSelectors = [
+    'span[role="img"][aria-label*="star"]',
+    '[aria-label*="Rated"][aria-label*="star"]',
+    '.stars[aria-label*="star"]',
   ];
 
-  // First try data-review-id (most reliable if it exists)
-  for (const selector of selectors.slice(0, 2)) {
-    const elements = document.querySelectorAll(selector);
-    if (elements.length > 0) return Array.from(elements);
-  }
+  for (const selector of starSelectors) {
+    const starElements = document.querySelectorAll(selector);
+    if (starElements.length === 0) continue;
 
-  // Fallback: find star rating elements and walk up to their review container
-  for (const selector of selectors.slice(2)) {
-    const ratingElements = document.querySelectorAll(selector);
-    if (ratingElements.length > 0) {
-      const containers = new Set();
-      ratingElements.forEach((el) => {
-        // Walk up to find a reasonable container (usually 3-5 levels up)
-        let parent = el;
-        for (let i = 0; i < 8; i++) {
-          if (!parent.parentElement) break;
-          parent = parent.parentElement;
-          // Look for a container that's big enough to be a review card
-          if (parent.offsetHeight > 100 && parent.offsetWidth > 200) {
-            // Check if this container has text content that looks like a review
-            const text = parent.textContent || "";
-            if (text.length > 50) {
-              containers.add(parent);
-              break;
+    const found = new Set();
+    starElements.forEach((el) => {
+      // Walk up the DOM to find a suitable review container
+      let parent = el;
+      for (let i = 0; i < 12; i++) {
+        if (!parent.parentElement) break;
+        parent = parent.parentElement;
+
+        // A review container is a decently-sized block with text content
+        const rect = parent.getBoundingClientRect();
+        if (rect.height > 60 && rect.width > 200 && parent.children.length >= 2) {
+          const text = parent.textContent || "";
+          if (text.length > 40) {
+            // Make sure we haven't walked too far up (stop at large containers)
+            if (rect.height < 800) {
+              found.add(parent);
             }
+            break;
           }
         }
-      });
-      if (containers.size > 0) return Array.from(containers);
-    }
+      }
+    });
+
+    if (found.size > 0) return Array.from(found);
   }
 
   return [];
@@ -120,32 +121,45 @@ function findReviewContainers() {
 
 // ─── Extract review data from a container ────
 function extractReviewData(container) {
-  const text = container.textContent || "";
-  
-  // Extract star rating from aria-label
+  // ── Extract star rating ────────────────────
   let starRating = null;
-  const ratingEl = container.querySelector('[aria-label*="star"], [aria-label*="Star"], [aria-label*="rated"], [aria-label*="Rated"]');
+
+  // Google Maps: <span role="img" aria-label="5 stars">
+  // Test page: <div class="stars" aria-label="Rated 5 out of 5 stars">
+  const ratingEl = container.querySelector(
+    '[role="img"][aria-label*="star"], [aria-label*="Rated"][aria-label*="star"], .stars[aria-label*="star"]'
+  );
+
   if (ratingEl) {
     const ariaLabel = ratingEl.getAttribute("aria-label") || "";
-    const match = ariaLabel.match(/(\d)/);
+    // Match patterns: "5 stars", "Rated 5 out of 5", "4 stars", etc.
+    const match = ariaLabel.match(/(\d)\s*(?:out of \d\s*)?star/i);
     if (match) starRating = parseInt(match[1]);
   }
 
-  // Also try to find rating from filled star icons
+  // Fallback: count filled star elements
   if (!starRating) {
-    const filledStars = container.querySelectorAll('[aria-label="Full star"], .filled-star, [data-rating]');
-    if (filledStars.length > 0) {
+    const filledStars = container.querySelectorAll(
+      ".star.filled, .star-filled, [aria-label='Full star']"
+    );
+    if (filledStars.length > 0 && filledStars.length <= 5) {
       starRating = filledStars.length;
     }
   }
 
-  // Extract reviewer name — usually the first prominent text element
+  // ── Extract reviewer name ──────────────────
   let reviewerName = null;
+
+  // Google Maps: reviewer name is usually a button or link near the top
+  // that links to /contrib/ profile. Also sometimes in aria-label of the card.
   const nameSelectors = [
-    '[data-reviewer-name]',
-    '.reviewer-name',
-    'a[href*="contrib"]', // Google profile links
+    "[data-reviewer-name]",         // Explicit attribute (test page)
+    ".reviewer-name",               // Class-based (test page)
+    'button[data-href*="contrib"]', // Google Maps contributor link
+    'a[href*="contrib"]',           // Google Maps contributor link
+    'a[href*="/maps/contrib/"]',    // Another Maps pattern
   ];
+
   for (const sel of nameSelectors) {
     const el = container.querySelector(sel);
     if (el) {
@@ -154,59 +168,110 @@ function extractReviewData(container) {
     }
   }
 
-  // If no specific selector found, try to find a name-like element
+  // Fallback: look for a short, bold text element near the top (the name)
   if (!reviewerName) {
-    // The reviewer name is typically in a bold or heading element near the top
-    const boldElements = container.querySelectorAll("strong, b, h3, h4, [role='heading']");
-    for (const el of boldElements) {
+    // In Google Maps, the name is often in a <button> or <div> with role
+    const candidates = container.querySelectorAll(
+      "button, a, strong, b, [role='heading'], h3, h4"
+    );
+    for (const el of candidates) {
       const name = el.textContent?.trim();
-      if (name && name.length > 1 && name.length < 50 && !name.includes("Reply") && !name.includes("star")) {
+      if (
+        name &&
+        name.length > 1 &&
+        name.length < 40 &&
+        !name.toLowerCase().includes("reply") &&
+        !name.toLowerCase().includes("star") &&
+        !name.toLowerCase().includes("review") &&
+        !name.toLowerCase().includes("helpful") &&
+        !name.toLowerCase().includes("flag") &&
+        !name.toLowerCase().includes("like") &&
+        !name.toLowerCase().includes("more") &&
+        !name.toLowerCase().includes("response")
+      ) {
         reviewerName = name;
         break;
       }
     }
   }
 
-  // Extract review text — look for the longest paragraph-like text
+  // ── Extract review text ────────────────────
   let reviewText = null;
-  const textElements = container.querySelectorAll("p, span, div");
-  let longestText = "";
-  textElements.forEach((el) => {
-    const elText = el.textContent?.trim() || "";
-    // Review text is usually the longest text block that isn't a name or rating
-    if (
-      elText.length > longestText.length &&
-      elText.length > 20 &&
-      elText.length < 5000 &&
-      !elText.includes("Reply") &&
-      el.children.length < 3 // Leaf-ish node
-    ) {
-      longestText = elText;
-    }
-  });
-  if (longestText) reviewText = longestText;
 
+  // Google Maps uses a specific class for review text (wiI7pd),
+  // but class names can change. We try it first, then fall back.
+
+  // Strategy 1: Find .review-text p or span (test page and some Maps versions)
+  const reviewTextEl = container.querySelector(".review-text p, .review-text span, .review-text");
+  if (reviewTextEl) {
+    const text = reviewTextEl.textContent?.trim();
+    if (text && text.length > 15) reviewText = text;
+  }
+
+  // Strategy 2: Find the longest suitable text block that isn't the reviewer name
+  if (!reviewText) {
+    const textElements = container.querySelectorAll("span, p, div");
+    let longestText = "";
+
+    textElements.forEach((el) => {
+      const elText = el.textContent?.trim() || "";
+      // Review text is typically the longest text block that:
+      // - Is longer than what we have so far
+      // - Is at least 15 chars (not a label or name)
+      // - Is under 5000 chars (not the entire container)
+      // - Doesn't contain common non-review words
+      // - Is a leaf-ish node (< 3 direct children)
+      if (
+        elText.length > longestText.length &&
+        elText.length > 15 &&
+        elText.length < 5000 &&
+        el.children.length < 5 &&
+        !elText.includes("stars") &&
+        elText !== reviewerName
+      ) {
+        longestText = elText;
+      }
+    });
+
+    if (longestText) reviewText = longestText;
+  }
+
+  // Need at least some review content to generate a reply
   if (!reviewText && !starRating) return null;
 
   return {
-    reviewText: reviewText || "(No text review)",
+    reviewText: reviewText || "(No text review — rating only)",
     reviewerName: reviewerName || "the customer",
     starRating: starRating || 3,
   };
 }
 
-// ─── Find the reply textarea or reply button ─
+// ─── Find the reply textarea/button in or near a container ─
 function findReplyArea(container) {
   // Look for an existing textarea (reply box already open)
-  const textarea = container.querySelector('textarea, [contenteditable="true"], [role="textbox"]');
+  const textarea = container.querySelector(
+    'textarea, [contenteditable="true"], [role="textbox"]'
+  );
   if (textarea) return textarea;
 
-  // Look for a "Reply" button that opens the textarea
+  // Look for a "Reply" button within the container
   const buttons = container.querySelectorAll("button, [role='button']");
   for (const btn of buttons) {
     const btnText = btn.textContent?.trim().toLowerCase() || "";
-    if (btnText === "reply" || btnText.includes("reply")) {
+    if (btnText === "reply" || btnText === "respond") {
       return btn;
+    }
+  }
+
+  // Google Maps: the reply button might be a sibling of the review container
+  const nextSibling = container.nextElementSibling;
+  if (nextSibling) {
+    const siblingBtn = nextSibling.querySelector("button, [role='button']");
+    if (siblingBtn) {
+      const btnText = siblingBtn.textContent?.trim().toLowerCase() || "";
+      if (btnText === "reply" || btnText === "respond") {
+        return siblingBtn;
+      }
     }
   }
 
@@ -214,7 +279,7 @@ function findReplyArea(container) {
 }
 
 // ─── Inject the Generate Reply button ────────
-function injectGenerateButton(container, replyArea, reviewData) {
+function injectGenerateButton(container, reviewData) {
   const wrapper = document.createElement("div");
   wrapper.className = "rr-button-wrapper";
 
@@ -226,27 +291,62 @@ function injectGenerateButton(container, replyArea, reviewData) {
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await handleGenerate(btn, container, replyArea, reviewData);
+    await handleGenerate(btn, container, reviewData);
   });
 
   wrapper.appendChild(btn);
 
-  // Insert the button near the reply area
-  if (replyArea.tagName === "TEXTAREA" || replyArea.getAttribute("contenteditable") || replyArea.getAttribute("role") === "textbox") {
-    // Reply box is already open — insert button above it
-    replyArea.parentElement.insertBefore(wrapper, replyArea);
-  } else {
-    // Reply button exists — insert our button next to it
-    replyArea.parentElement.insertBefore(wrapper, replyArea.nextSibling);
+  // ── Decide where to place the button ──────
+  // Priority 1: insert above an existing reply textarea
+  const textarea = container.querySelector(
+    'textarea, [contenteditable="true"], [role="textbox"]'
+  );
+  if (textarea) {
+    textarea.parentElement.insertBefore(wrapper, textarea);
+    return;
   }
+
+  // Priority 2: insert after the reply-section label but before textarea
+  const replySection = container.querySelector(".reply-section");
+  if (replySection) {
+    const label = replySection.querySelector("label");
+    if (label) {
+      label.after(wrapper);
+      return;
+    }
+    replySection.prepend(wrapper);
+    return;
+  }
+
+  // Priority 3: insert next to a reply/respond button
+  const replyBtn = findReplyButtonOnly(container);
+  if (replyBtn) {
+    replyBtn.parentElement.insertBefore(wrapper, replyBtn.nextSibling);
+    return;
+  }
+
+  // Priority 4: append at the bottom of the review container
+  container.appendChild(wrapper);
+}
+
+// Helper: find just a Reply button (not textarea)
+function findReplyButtonOnly(container) {
+  const buttons = container.querySelectorAll("button, [role='button']");
+  for (const btn of buttons) {
+    const btnText = btn.textContent?.trim().toLowerCase() || "";
+    if (btnText === "reply" || btnText === "respond") {
+      return btn;
+    }
+  }
+  return null;
 }
 
 // ─── Handle Generate button click ────────────
-async function handleGenerate(btn, container, replyArea, reviewData) {
-  // Check for token
+async function handleGenerate(btn, container, reviewData) {
+  // Check for auth token
   const { rr_token } = await chrome.storage.local.get(["rr_token"]);
   if (!rr_token) {
-    showToast("Please log in via the ReviewReply extension popup", "warning");
+    showToast("Please log in via the ReviewReply extension popup first", "warning");
     return;
   }
 
@@ -284,19 +384,23 @@ async function handleGenerate(btn, container, replyArea, reviewData) {
       throw new Error(data.error || "Generation failed");
     }
 
-    // Insert reply into the textarea
-    const inserted = insertReplyText(container, replyArea, data.reply);
+    // Try to insert reply into the reply textarea
+    const inserted = await insertReplyText(container, data.reply);
 
     if (inserted) {
-      // Update button to show regenerate
       btn.innerHTML = '↻ <span>Regenerate</span>';
       btn.classList.remove("rr-loading");
       btn.classList.add("rr-regenerate");
       btn.disabled = false;
-
-      showToast("Reply generated! Review and hit Send.", "success");
+      showToast("Reply generated! Review it and hit Send.", "success");
     } else {
-      throw new Error("Could not insert reply into the text field");
+      // Even if we can't find a textarea, show the reply in a toast/overlay
+      // so the user can still copy it
+      showReplyOverlay(container, data.reply);
+      btn.innerHTML = '↻ <span>Regenerate</span>';
+      btn.classList.remove("rr-loading");
+      btn.classList.add("rr-regenerate");
+      btn.disabled = false;
     }
   } catch (err) {
     console.error("[ReviewReply] Generation error:", err);
@@ -313,49 +417,101 @@ async function handleGenerate(btn, container, replyArea, reviewData) {
 }
 
 // ─── Insert generated reply into textarea ────
-function insertReplyText(container, replyArea, text) {
-  // If replyArea is a button (reply not yet open), click it first
-  if (
-    replyArea.tagName === "BUTTON" ||
-    (replyArea.getAttribute("role") === "button" && !replyArea.getAttribute("contenteditable"))
-  ) {
-    replyArea.click();
+async function insertReplyText(container, text) {
+  // First, check if there's already a textarea open
+  let textarea = container.querySelector(
+    'textarea, [contenteditable="true"], [role="textbox"]'
+  );
 
-    // Wait for textarea to appear after clicking Reply
-    return new Promise((resolve) => {
-      let attempts = 0;
-      const check = setInterval(() => {
-        attempts++;
-        const textarea = container.querySelector('textarea, [contenteditable="true"], [role="textbox"]');
-        if (textarea) {
-          clearInterval(check);
-          setTextareaValue(textarea, text);
-          resolve(true);
-        } else if (attempts > 20) {
-          clearInterval(check);
-          resolve(false);
-        }
-      }, 200);
-    });
+  // If no textarea, try clicking a Reply button to open one
+  if (!textarea) {
+    const replyBtn = findReplyButtonOnly(container);
+    if (replyBtn) {
+      replyBtn.click();
+
+      // Wait for textarea to appear (Google Maps animates the reply box)
+      textarea = await waitForElement(
+        container,
+        'textarea, [contenteditable="true"], [role="textbox"]',
+        3000
+      );
+    }
+
+    // Also check siblings (Google Maps sometimes puts the reply area outside the review container)
+    if (!textarea) {
+      const nextEl = container.nextElementSibling;
+      if (nextEl) {
+        textarea = nextEl.querySelector(
+          'textarea, [contenteditable="true"], [role="textbox"]'
+        );
+      }
+    }
   }
 
-  // Direct textarea insertion
-  setTextareaValue(replyArea, text);
+  if (!textarea) return false;
+
+  setTextareaValue(textarea, text);
   return true;
 }
 
-// ─── Set textarea value and trigger React change detection ───
+// ─── Wait for an element to appear ───────────
+function waitForElement(parent, selector, timeout = 3000) {
+  return new Promise((resolve) => {
+    // Check immediately
+    const existing = parent.querySelector(selector);
+    if (existing) return resolve(existing);
+
+    let resolved = false;
+
+    const observer = new MutationObserver(() => {
+      const el = parent.querySelector(selector);
+      if (el && !resolved) {
+        resolved = true;
+        observer.disconnect();
+        resolve(el);
+      }
+    });
+
+    observer.observe(parent, { childList: true, subtree: true });
+
+    // Also observe the parent's parent (reply area might be a sibling)
+    if (parent.parentElement) {
+      const siblingObserver = new MutationObserver(() => {
+        const nextEl = parent.nextElementSibling;
+        if (nextEl) {
+          const el = nextEl.querySelector(selector);
+          if (el && !resolved) {
+            resolved = true;
+            siblingObserver.disconnect();
+            observer.disconnect();
+            resolve(el);
+          }
+        }
+      });
+      siblingObserver.observe(parent.parentElement, { childList: true, subtree: true });
+
+      setTimeout(() => {
+        siblingObserver.disconnect();
+      }, timeout);
+    }
+
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        observer.disconnect();
+        resolve(null);
+      }
+    }, timeout);
+  });
+}
+
+// ─── Set textarea value and trigger change detection ───
 function setTextareaValue(textarea, text) {
-  // For native textarea elements
   if (textarea.tagName === "TEXTAREA" || textarea.tagName === "INPUT") {
-    // Use the native setter to bypass React's synthetic event system
-    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLTextAreaElement.prototype,
-      "value"
-    )?.set || Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      "value"
-    )?.set;
+    // Use the native setter to bypass React/Angular synthetic events
+    const nativeInputValueSetter =
+      Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set ||
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
 
     if (nativeInputValueSetter) {
       nativeInputValueSetter.call(textarea, text);
@@ -363,27 +519,60 @@ function setTextareaValue(textarea, text) {
       textarea.value = text;
     }
 
-    // Dispatch events so React detects the change
+    // Fire events so the framework detects the change
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
     textarea.dispatchEvent(new Event("change", { bubbles: true }));
     textarea.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }));
     textarea.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
-  }
-  // For contenteditable divs
-  else if (textarea.getAttribute("contenteditable") === "true" || textarea.getAttribute("role") === "textbox") {
+  } else if (
+    textarea.getAttribute("contenteditable") === "true" ||
+    textarea.getAttribute("role") === "textbox"
+  ) {
     textarea.focus();
     textarea.textContent = text;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
     textarea.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  // Focus the textarea so the user can see and edit
   textarea.focus();
+}
+
+// ─── Show reply in a copy-able overlay (fallback) ───
+function showReplyOverlay(container, replyText) {
+  // Remove existing overlay in this container if any
+  const existing = container.querySelector(".rr-reply-overlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.className = "rr-reply-overlay";
+  overlay.innerHTML = `
+    <div class="rr-reply-overlay-header">
+      <span>✨ Generated Reply</span>
+      <button class="rr-copy-btn" title="Copy to clipboard">📋 Copy</button>
+    </div>
+    <div class="rr-reply-overlay-text">${escapeHtml(replyText)}</div>
+  `;
+
+  // Copy button handler
+  overlay.querySelector(".rr-copy-btn").addEventListener("click", () => {
+    navigator.clipboard.writeText(replyText).then(() => {
+      showToast("Reply copied to clipboard!", "success");
+    });
+  });
+
+  container.appendChild(overlay);
+  showToast("Reply generated! Copy it and paste into the reply box.", "success");
+}
+
+// ─── Escape HTML for safe insertion ──────────
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // ─── Toast Notification ──────────────────────
 function showToast(message, type = "info", linkUrl = null) {
-  // Remove existing toast
   const existing = document.querySelector(".rr-toast");
   if (existing) existing.remove();
 
@@ -401,12 +590,10 @@ function showToast(message, type = "info", linkUrl = null) {
 
   document.body.appendChild(toast);
 
-  // Animate in
   requestAnimationFrame(() => {
     toast.classList.add("rr-toast-visible");
   });
 
-  // Auto-remove after 5 seconds
   setTimeout(() => {
     toast.classList.remove("rr-toast-visible");
     setTimeout(() => toast.remove(), 300);
