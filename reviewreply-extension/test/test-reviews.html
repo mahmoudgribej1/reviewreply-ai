@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Business Profile — Reviews (Test Simulator)</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        background: #f8f9fa;
+        color: #202124;
+      }
+
+      /* ─── Top Nav (fake GBP header) ─── */
+      .top-nav {
+        background: white;
+        border-bottom: 1px solid #dadce0;
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .top-nav .logo {
+        font-size: 20px;
+        font-weight: 500;
+        color: #5f6368;
+      }
+      .top-nav .logo span {
+        color: #1a73e8;
+      }
+      .top-nav .biz-name {
+        font-size: 14px;
+        color: #202124;
+        font-weight: 500;
+        margin-left: auto;
+      }
+
+      /* ─── Side nav ─── */
+      .layout {
+        display: flex;
+        min-height: calc(100vh - 52px);
+      }
+      .sidebar {
+        width: 240px;
+        background: white;
+        border-right: 1px solid #dadce0;
+        padding: 16px 0;
+      }
+      .sidebar a {
+        display: block;
+        padding: 10px 24px;
+        color: #5f6368;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .sidebar a.active {
+        color: #1a73e8;
+        background: #e8f0fe;
+        font-weight: 500;
+      }
+
+      /* ─── Main content ─── */
+      .main {
+        flex: 1;
+        padding: 24px 32px;
+        max-width: 900px;
+      }
+      .page-title {
+        font-size: 22px;
+        font-weight: 400;
+        margin-bottom: 8px;
+      }
+      .page-subtitle {
+        font-size: 14px;
+        color: #5f6368;
+        margin-bottom: 24px;
+      }
+
+      /* ─── Review Cards ─── */
+      .review-card {
+        background: white;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+      .review-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .reviewer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e8eaed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #5f6368;
+        font-weight: 500;
+      }
+      .reviewer-info {
+        flex: 1;
+      }
+      .reviewer-name {
+        font-weight: 500;
+        font-size: 14px;
+        color: #202124;
+      }
+      .review-date {
+        font-size: 12px;
+        color: #5f6368;
+      }
+
+      /* ─── Stars ─── */
+      .stars {
+        display: flex;
+        gap: 2px;
+        margin-bottom: 10px;
+      }
+      .star {
+        font-size: 18px;
+        color: #dadce0;
+      }
+      .star.filled {
+        color: #fbbc04;
+      }
+
+      /* ─── Review text ─── */
+      .review-text {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #202124;
+        margin-bottom: 16px;
+      }
+
+      /* ─── Reply area ─── */
+      .reply-section {
+        border-top: 1px solid #e8eaed;
+        padding-top: 16px;
+      }
+      .reply-section label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #5f6368;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .reply-textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 12px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
+        outline: none;
+      }
+      .reply-textarea:focus {
+        border-color: #1a73e8;
+      }
+      .reply-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .btn-reply {
+        padding: 8px 24px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+      }
+      .btn-reply.primary {
+        background: #1a73e8;
+        color: white;
+      }
+      .btn-reply.primary:hover {
+        background: #1765cc;
+      }
+      .btn-reply.secondary {
+        background: white;
+        color: #1a73e8;
+        border: 1px solid #dadce0;
+      }
+
+      /* ─── Existing reply ─── */
+      .existing-reply {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-top: 12px;
+      }
+      .existing-reply .reply-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #5f6368;
+        margin-bottom: 6px;
+      }
+      .existing-reply .reply-text {
+        font-size: 13px;
+        color: #202124;
+        line-height: 1.5;
+      }
+
+      /* ─── Info banner ─── */
+      .test-banner {
+        background: #fef7e0;
+        border: 1px solid #fdd835;
+        border-radius: 8px;
+        padding: 12px 20px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: #5f4339;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .test-banner strong {
+        color: #e65100;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Fake GBP header -->
+    <div class="top-nav">
+      <div class="logo"><span>Google</span> Business Profile</div>
+      <div class="biz-name">ReviewReply Test Business</div>
+    </div>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <a href="#">Home</a>
+        <a href="#">Posts</a>
+        <a href="#" class="active">Reviews</a>
+        <a href="#">Messages</a>
+        <a href="#">Photos</a>
+        <a href="#">Performance</a>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main">
+        <h1 class="page-title">Reviews</h1>
+        <p class="page-subtitle">7 reviews • 4.1 average rating</p>
+
+        <div class="test-banner">
+          ⚠️ <strong>TEST MODE</strong> — This page simulates Google Business
+          Profile reviews for extension testing. The ReviewReply AI content
+          script should inject "✨ Generate Reply" buttons below.
+        </div>
+
+        <!-- ─── Review 1: 5 stars, positive ─── -->
+        <div class="review-card" data-review-id="review-001">
+          <div class="review-header">
+            <div class="reviewer-avatar">J</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name"><strong>John Martinez</strong></div>
+              <div class="review-date">2 days ago</div>
+            </div>
+          </div>
+          <div class="stars" aria-label="Rated 5 out of 5 stars">
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+          </div>
+          <div class="review-text">
+            <p>
+              Absolutely incredible experience! The staff was extremely
+              welcoming from the moment we walked in. The attention to detail is
+              what sets this place apart. Will definitely be recommending to all
+              my friends and family. Keep up the amazing work!
+            </p>
+          </div>
+          <div class="reply-section">
+            <label>Your reply</label>
+            <textarea
+              class="reply-textarea"
+              placeholder="Write a reply..."
+            ></textarea>
+            <div class="reply-actions">
+              <button class="btn-reply secondary">Cancel</button>
+              <button class="btn-reply primary" role="button">Reply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Review 2: 1 star, negative ─── -->
+        <div class="review-card" data-review-id="review-002">
+          <div class="review-header">
+            <div class="reviewer-avatar">S</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name"><strong>Sarah Thompson</strong></div>
+              <div class="review-date">5 days ago</div>
+            </div>
+          </div>
+          <div class="stars" aria-label="Rated 1 out of 5 stars">
+            <span class="star filled">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+          </div>
+          <div class="review-text">
+            <p>
+              Very disappointed with my visit. I waited over 45 minutes despite
+              having a reservation. When I finally got attended to, the service
+              was rushed and dismissive. The quality did not match the price at
+              all. I expected much better based on the online reviews. Will not
+              be returning.
+            </p>
+          </div>
+          <div class="reply-section">
+            <label>Your reply</label>
+            <textarea
+              class="reply-textarea"
+              placeholder="Write a reply..."
+            ></textarea>
+            <div class="reply-actions">
+              <button class="btn-reply secondary">Cancel</button>
+              <button class="btn-reply primary" role="button">Reply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Review 3: 3 stars, neutral ─── -->
+        <div class="review-card" data-review-id="review-003">
+          <div class="review-header">
+            <div class="reviewer-avatar">M</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name"><strong>Mike Chen</strong></div>
+              <div class="review-date">1 week ago</div>
+            </div>
+          </div>
+          <div class="stars" aria-label="Rated 3 out of 5 stars">
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+          </div>
+          <div class="review-text">
+            <p>
+              It was okay, nothing special. The location is convenient and
+              parking is easy, which is a plus. The facility itself is clean but
+              could use some updating. Staff was friendly enough. Pricing seems
+              a bit high for what you get. Might come back if there's a deal.
+            </p>
+          </div>
+          <div class="reply-section">
+            <label>Your reply</label>
+            <textarea
+              class="reply-textarea"
+              placeholder="Write a reply..."
+            ></textarea>
+            <div class="reply-actions">
+              <button class="btn-reply secondary">Cancel</button>
+              <button class="btn-reply primary" role="button">Reply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Review 4: 5 stars, short ─── -->
+        <div class="review-card" data-review-id="review-004">
+          <div class="review-header">
+            <div class="reviewer-avatar">A</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name"><strong>Amanda Davis</strong></div>
+              <div class="review-date">2 weeks ago</div>
+            </div>
+          </div>
+          <div class="stars" aria-label="Rated 5 out of 5 stars">
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+          </div>
+          <div class="review-text">
+            <p>
+              Love this place! Been coming here for over a year now and the
+              quality has only gotten better. The team really goes above and
+              beyond every single time.
+            </p>
+          </div>
+          <div class="reply-section">
+            <label>Your reply</label>
+            <textarea
+              class="reply-textarea"
+              placeholder="Write a reply..."
+            ></textarea>
+            <div class="reply-actions">
+              <button class="btn-reply secondary">Cancel</button>
+              <button class="btn-reply primary" role="button">Reply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Review 5: 2 stars, already replied ─── -->
+        <div class="review-card" data-review-id="review-005">
+          <div class="review-header">
+            <div class="reviewer-avatar">R</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name"><strong>Robert Wilson</strong></div>
+              <div class="review-date">3 weeks ago</div>
+            </div>
+          </div>
+          <div class="stars" aria-label="Rated 2 out of 5 stars">
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+          </div>
+          <div class="review-text">
+            <p>
+              Not great. The facility was cold and understaffed. Had to wait a
+              long time and nobody seemed to care. The equipment in the back
+              area was outdated. For the money they charge, I expected a much
+              better experience.
+            </p>
+          </div>
+          <div class="reply-section">
+            <label>Your reply</label>
+            <textarea
+              class="reply-textarea"
+              placeholder="Write a reply..."
+            ></textarea>
+            <div class="reply-actions">
+              <button class="btn-reply secondary">Cancel</button>
+              <button class="btn-reply primary" role="button">Reply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Review 6: 4 stars ─── -->
+        <div class="review-card" data-review-id="review-006">
+          <div class="review-header">
+            <div class="reviewer-avatar">L</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name"><strong>Lisa Park</strong></div>
+              <div class="review-date">1 month ago</div>
+            </div>
+          </div>
+          <div class="stars" aria-label="Rated 4 out of 5 stars">
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star filled">★</span>
+            <span class="star">★</span>
+          </div>
+          <div class="review-text">
+            <p>
+              Really enjoyed my experience here. The staff was knowledgeable and
+              patient with all my questions. The only reason I'm not giving 5
+              stars is the parking situation — it can get really crowded on
+              weekends. But the service itself is top-notch and I'll definitely
+              be back.
+            </p>
+          </div>
+          <div class="reply-section">
+            <label>Your reply</label>
+            <textarea
+              class="reply-textarea"
+              placeholder="Write a reply..."
+            ></textarea>
+            <div class="reply-actions">
+              <button class="btn-reply secondary">Cancel</button>
+              <button class="btn-reply primary" role="button">Reply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Review 7: 1 star, angry ─── -->
+        <div class="review-card" data-review-id="review-007">
+          <div class="review-header">
+            <div class="reviewer-avatar">D</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name"><strong>David Kim</strong></div>
+              <div class="review-date">1 month ago</div>
+            </div>
+          </div>
+          <div class="stars" aria-label="Rated 1 out of 5 stars">
+            <span class="star filled">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+          </div>
+          <div class="review-text">
+            <p>
+              Complete waste of money and time. Booked online, showed up, and
+              they had no record of my appointment. The person at the front desk
+              was rude about it too. Then they tried to squeeze me in but the
+              quality of service was terrible — clearly rushed. Never again.
+              Save your money and go somewhere else.
+            </p>
+          </div>
+          <div class="reply-section">
+            <label>Your reply</label>
+            <textarea
+              class="reply-textarea"
+              placeholder="Write a reply..."
+            ></textarea>
+            <div class="reply-actions">
+              <button class="btn-reply secondary">Cancel</button>
+              <button class="btn-reply primary" role="button">Reply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

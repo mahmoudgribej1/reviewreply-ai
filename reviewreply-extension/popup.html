@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ReviewReply AI</title>
+    <link rel="stylesheet" href="styles/popup.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- ─── Loading State ─── -->
+      <div id="loading-state" class="state">
+        <div class="logo">✨ ReviewReply AI</div>
+        <p class="subtitle">Loading...</p>
+      </div>
+
+      <!-- ─── Logged Out State ─── -->
+      <div id="logged-out-state" class="state hidden">
+        <div class="logo">✨ ReviewReply AI</div>
+        <p class="subtitle">AI-powered review replies for your business</p>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          <div id="login-error" class="error hidden"></div>
+          <button type="submit" id="login-btn" class="btn btn-primary">
+            Log In
+          </button>
+        </form>
+
+        <p class="signup-link">
+          Don't have an account?
+          <a href="#" id="signup-link">Sign up</a>
+        </p>
+      </div>
+
+      <!-- ─── Logged In State ─── -->
+      <div id="logged-in-state" class="state hidden">
+        <div class="header">
+          <div class="logo-small">✨ ReviewReply AI</div>
+          <button id="logout-btn" class="btn-icon" title="Log out">⏻</button>
+        </div>
+
+        <div class="welcome">
+          <h2>Hello, <span id="user-name">there</span>!</h2>
+          <span id="plan-badge" class="badge badge-free">FREE</span>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-label">
+            <span id="usage-text">0 of 10 generations used</span>
+          </div>
+          <div class="progress-bar">
+            <div id="usage-fill" class="progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="manage-billing-btn" class="btn btn-secondary">
+            Manage Billing
+          </button>
+          <button id="settings-btn" class="btn btn-secondary">Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
