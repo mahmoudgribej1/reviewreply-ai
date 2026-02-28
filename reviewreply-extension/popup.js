@@ -20,6 +20,7 @@ const userName = document.getElementById("user-name");
 const planBadge = document.getElementById("plan-badge");
 const usageText = document.getElementById("usage-text");
 const usageFill = document.getElementById("usage-fill");
+const upgradeBtn = document.getElementById("upgrade-btn");
 const manageBillingBtn = document.getElementById("manage-billing-btn");
 const settingsBtn = document.getElementById("settings-btn");
 const logoutBtn = document.getElementById("logout-btn");
@@ -93,6 +94,15 @@ function renderLoggedIn(user) {
     usageFill.style.width = `${Math.min((used / limit) * 100, 100)}%`;
   }
 
+  // Show/hide action buttons based on plan
+  if (user.plan === "PRO") {
+    upgradeBtn.classList.add("hidden");
+    manageBillingBtn.classList.remove("hidden");
+  } else {
+    upgradeBtn.classList.remove("hidden");
+    manageBillingBtn.classList.add("hidden");
+  }
+
   showState("logged-in");
 }
 
@@ -142,9 +152,56 @@ signupLink.addEventListener("click", (e) => {
   chrome.tabs.create({ url: `${API_URL}/signup` });
 });
 
+// ─── Upgrade to Pro ──────────────────────────
+upgradeBtn.addEventListener("click", async () => {
+  upgradeBtn.disabled = true;
+  upgradeBtn.textContent = "Loading…";
+
+  try {
+    const { rr_token } = await chrome.storage.local.get(["rr_token"]);
+    const res = await fetch(`${API_URL}/api/lemonsqueezy/checkout`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${rr_token}` },
+    });
+
+    const data = await res.json();
+    if (data.checkoutUrl) {
+      chrome.tabs.create({ url: data.checkoutUrl });
+    } else {
+      alert(data.error || "Failed to start checkout");
+    }
+  } catch (err) {
+    alert("Network error — please try again");
+  } finally {
+    upgradeBtn.disabled = false;
+    upgradeBtn.textContent = "✨ Upgrade to Pro";
+  }
+});
+
 // ─── Manage Billing ──────────────────────────
-manageBillingBtn.addEventListener("click", () => {
-  chrome.tabs.create({ url: `${API_URL}/dashboard?tab=billing` });
+manageBillingBtn.addEventListener("click", async () => {
+  manageBillingBtn.disabled = true;
+  manageBillingBtn.textContent = "Loading…";
+
+  try {
+    const { rr_token } = await chrome.storage.local.get(["rr_token"]);
+    const res = await fetch(`${API_URL}/api/lemonsqueezy/portal`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${rr_token}` },
+    });
+
+    const data = await res.json();
+    if (data.portalUrl) {
+      chrome.tabs.create({ url: data.portalUrl });
+    } else {
+      alert(data.error || "Failed to open billing portal");
+    }
+  } catch (err) {
+    alert("Network error — please try again");
+  } finally {
+    manageBillingBtn.disabled = false;
+    manageBillingBtn.textContent = "Manage Billing";
+  }
 });
 
 // ─── Settings ────────────────────────────────

@@ -67,8 +67,9 @@ model User {
   emailVerified            DateTime?
   image                    String?
   plan                     Plan      @default(FREE)
-  stripeCustomerId         String?
-  stripeSubscriptionId     String?
+  lsCustomerId             String?   // LemonSqueezy customer ID
+  lsSubscriptionId         String?   // LemonSqueezy subscription ID
+  lsVariantId              String?   // LemonSqueezy variant/product ID
   generationsUsedThisMonth Int       @default(0)
   generationsPeriodStart   DateTime  @default(now())
   createdAt                DateTime  @default(now())

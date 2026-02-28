@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import UpgradeButton from "@/components/ui/UpgradeButton";
 
 const FREE_GENERATION_LIMIT = 10;
 
@@ -154,6 +155,29 @@ export default async function DashboardPage() {
               </p>
             </CardContent>
           </Card>
+
+          {/* Upgrade Card — FREE users only */}
+          {user.plan !== "PRO" && (
+            <Card className="md:col-span-2 border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-violet-600" />
+                  Upgrade to Pro
+                </CardTitle>
+                <CardDescription>
+                  Unlock unlimited AI reply generations for your business
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                  <li>✅ Unlimited reply generations</li>
+                  <li>✅ Priority AI model</li>
+                  <li>✅ Cancel anytime</li>
+                </ul>
+                <UpgradeButton />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
     </div>

@@ -117,6 +117,20 @@ body {
   background: #f5f5f5;
 }
 
+.btn-upgrade {
+  background: linear-gradient(135deg, #6c47ff, #9c6dff);
+  color: white;
+}
+
+.btn-upgrade:hover {
+  background: linear-gradient(135deg, #5a35e6, #8a5be8);
+}
+
+.btn-upgrade:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-icon {
   background: none;
   border: none;
