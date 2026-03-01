@@ -63,8 +63,12 @@ export async function POST(request: Request) {
     }
 
     // ─── Find or create user ─────────────────
+    // Lowercase email for consistent matching (Google returns lowercase
+    // but NextAuth PrismaAdapter might have stored it differently)
+    const email = profile.email.toLowerCase();
+
     let user = await prisma.user.findUnique({
-      where: { email: profile.email },
+      where: { email },
       include: { businessProfile: true },
     });
 
@@ -72,8 +76,8 @@ export async function POST(request: Request) {
       // Create new user from Google profile
       user = await prisma.user.create({
         data: {
-          email: profile.email,
-          name: profile.name || profile.email.split("@")[0],
+          email,
+          name: profile.name || email.split("@")[0],
           image: profile.picture || null,
           emailVerified: new Date(),
         },
