@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import UpgradeButton from "@/components/ui/UpgradeButton";
 import { SignOutButton, ManageBillingButton } from "@/components/ui/DashboardActions";
+import UpgradeVerifier from "@/components/ui/UpgradeVerifier";
 import { FREE_GENERATION_LIMIT } from "@/lib/constants";
 
 export default async function DashboardPage({
@@ -116,14 +117,17 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Processing banner */}
+        {/* Processing banner + auto-upgrade verifier */}
         {searchParams.upgraded === "true" && user.plan !== "PRO" && (
-          <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
-            <Sparkles className="h-5 w-5 flex-shrink-0" />
-            <p className="text-sm font-medium">
-              Payment received! Your Pro upgrade is being processed — refresh this page in a few seconds.
-            </p>
-          </div>
+          <>
+            <UpgradeVerifier />
+            <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+              <Sparkles className="h-5 w-5 flex-shrink-0" />
+              <p className="text-sm font-medium">
+                Payment received! Activating your Pro plan automatically…
+              </p>
+            </div>
+          </>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
