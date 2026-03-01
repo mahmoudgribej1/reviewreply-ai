@@ -4,8 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { verifyExtensionToken } from "@/lib/jwt";
 import { generateReply } from "@/lib/groq";
-
-const FREE_GENERATION_LIMIT = 10;
+import { FREE_GENERATION_LIMIT } from "@/lib/constants";
 
 /**
  * POST /api/generate
@@ -48,16 +47,24 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { reviewText, reviewerName, starRating } = body;
 
-    if (!reviewText || typeof reviewText !== "string") {
+    if (!reviewText || typeof reviewText !== "string" || reviewText.trim().length === 0) {
       return NextResponse.json(
         { error: "reviewText is required" },
         { status: 400 }
       );
     }
 
-    if (starRating === undefined || starRating < 1 || starRating > 5) {
+    if (reviewText.length > 5000) {
       return NextResponse.json(
-        { error: "starRating must be between 1 and 5" },
+        { error: "reviewText must be under 5000 characters" },
+        { status: 400 }
+      );
+    }
+
+    const rating = Number(starRating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { error: "starRating must be an integer between 1 and 5" },
         { status: 400 }
       );
     }

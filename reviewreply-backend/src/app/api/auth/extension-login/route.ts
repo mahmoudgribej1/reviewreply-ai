@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signExtensionToken } from "@/lib/jwt";
-
-// Free plan limit
-const FREE_GENERATION_LIMIT = 10;
+import { FREE_GENERATION_LIMIT } from "@/lib/constants";
 
 export async function POST(request: Request) {
   try {

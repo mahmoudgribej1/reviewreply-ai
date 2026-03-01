@@ -2,6 +2,7 @@
 // ReviewReply AI — Popup Script
 // ─────────────────────────────────────────────
 
+// TODO: Change to your production URL before publishing
 const API_URL = "http://localhost:3000";
 
 // ─── DOM Elements ────────────────────────────
@@ -89,7 +90,7 @@ function renderLoggedIn(user) {
     usageFill.style.width = "100%";
   } else {
     const used = user.generationsUsed || 0;
-    const limit = user.generationsLimit || 10;
+    const limit = user.generationsLimit || 30;
     usageText.textContent = `${used} of ${limit} generations used`;
     usageFill.style.width = `${Math.min((used / limit) * 100, 100)}%`;
   }

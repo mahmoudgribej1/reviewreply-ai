@@ -3,6 +3,7 @@
 // Injected into Google Maps (google.com/maps/*)
 // ─────────────────────────────────────────────
 
+// TODO: Change to your production URL before publishing
 const RR_API_URL = "http://localhost:3000";
 const DEBOUNCE_MS = 600;
 

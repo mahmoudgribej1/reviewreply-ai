@@ -2,6 +2,7 @@
 // ReviewReply AI — Background Service Worker
 // ─────────────────────────────────────────────
 
+// TODO: Change to your production URL before publishing
 const API_URL = "http://localhost:3000";
 
 // On first install, open the signup page so user creates an account

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,30 +14,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Sparkles, Loader2 } from "lucide-react";
-
-const BUSINESS_TYPES = [
-  "Restaurant",
-  "Salon / Barbershop",
-  "Gym / Fitness Studio",
-  "Clinic / Medical Practice",
-  "Hotel / Hospitality",
-  "Retail Store",
-  "Auto Service / Repair",
-  "Real Estate",
-  "Dental Practice",
-  "Other",
-];
-
-const TONE_OPTIONS = [
-  "Professional",
-  "Friendly & Casual",
-  "Warm & Personal",
-  "Formal",
-  "Witty & Fun",
-];
+import { BUSINESS_TYPES, TONE_OPTIONS } from "@/lib/constants";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { status } = useSession();
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
   const [description, setDescription] = useState("");
@@ -44,6 +26,20 @@ export default function OnboardingPage() {
   const [ownerFirstName, setOwnerFirstName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+      </div>
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

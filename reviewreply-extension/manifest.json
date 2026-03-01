@@ -6,8 +6,7 @@
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": [
     "https://www.google.com/maps/*",
-    "https://maps.google.com/*",
-    "http://localhost:5555/*"
+    "https://maps.google.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -29,8 +28,7 @@
     {
       "matches": [
         "https://www.google.com/maps/*",
-        "https://maps.google.com/*",
-        "http://localhost:5555/*"
+        "https://maps.google.com/*"
       ],
       "js": ["content.js"],
       "css": ["styles/content.css"],

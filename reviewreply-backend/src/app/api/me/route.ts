@@ -3,8 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { verifyExtensionToken } from "@/lib/jwt";
-
-const FREE_GENERATION_LIMIT = 10;
+import { FREE_GENERATION_LIMIT } from "@/lib/constants";
 
 /**
  * GET /api/me
