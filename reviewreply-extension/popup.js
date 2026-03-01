@@ -2,8 +2,7 @@
 // ReviewReply AI — Popup Script
 // ─────────────────────────────────────────────
 
-// TODO: Change to your production URL before publishing
-const API_URL = "http://localhost:3000";
+const API_URL = "https://reviewreply-ai-hca9.vercel.app";
 
 // ─── DOM Elements ────────────────────────────
 const loadingState = document.getElementById("loading-state");

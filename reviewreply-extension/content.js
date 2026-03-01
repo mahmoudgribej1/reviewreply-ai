@@ -3,8 +3,7 @@
 // Injected into Google Maps (google.com/maps/*)
 // ─────────────────────────────────────────────
 
-// TODO: Change to your production URL before publishing
-const RR_API_URL = "http://localhost:3000";
+const RR_API_URL = "https://reviewreply-ai-hca9.vercel.app";
 const DEBOUNCE_MS = 600;
 
 let debounceTimer = null;

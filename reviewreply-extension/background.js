@@ -2,8 +2,7 @@
 // ReviewReply AI — Background Service Worker
 // ─────────────────────────────────────────────
 
-// TODO: Change to your production URL before publishing
-const API_URL = "http://localhost:3000";
+const API_URL = "https://reviewreply-ai-hca9.vercel.app";
 
 // On first install, open the signup page so user creates an account
 chrome.runtime.onInstalled.addListener((details) => {
