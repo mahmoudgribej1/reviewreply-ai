@@ -174,7 +174,7 @@ export default function HomePage() {
                 </CardTitle>
                 <CardDescription>For busy business owners</CardDescription>
                 <p className="text-3xl font-bold text-gray-900 mt-2">
-                  $19<span className="text-base font-normal text-gray-400">/mo</span>
+                  $9.99<span className="text-base font-normal text-gray-400">/mo</span>
                 </p>
               </CardHeader>
               <CardContent>
