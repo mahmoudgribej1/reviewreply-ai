@@ -147,6 +147,49 @@ body {
   color: #333;
 }
 
+/* ─── Google Button ────────────────────── */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #444;
+  border: 1px solid #ddd;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.btn-google:hover {
+  background: #f7f7f7;
+  border-color: #ccc;
+}
+
+.btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Divider ──────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.divider span {
+  padding: 0 12px;
+  color: #999;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 /* ─── Signup link ──────────────────────── */
 .signup-link {
   text-align: center;

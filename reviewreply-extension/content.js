@@ -54,8 +54,31 @@ function injectButtons() {
   }
 
   reviewContainers.forEach((container) => {
-    // Skip if we already injected a button
+    // Skip if we already injected a button (attribute flag)
     if (container.dataset.rrInjected === "true") return;
+
+    // Skip if a button wrapper already exists inside this container
+    // (catches cases where the MutationObserver re-detects a slightly
+    //  different parent but the button is already present inside it)
+    if (container.querySelector(".rr-button-wrapper")) {
+      container.dataset.rrInjected = "true";
+      return;
+    }
+
+    // Skip if any ancestor is already marked (we're a nested sub-element)
+    let ancestor = container.parentElement;
+    let skip = false;
+    while (ancestor) {
+      if (ancestor.dataset.rrInjected === "true") {
+        skip = true;
+        break;
+      }
+      ancestor = ancestor.parentElement;
+    }
+    if (skip) {
+      container.dataset.rrInjected = "true";
+      return;
+    }
 
     const reviewData = extractReviewData(container);
     if (!reviewData) return;
