@@ -143,9 +143,18 @@ export async function getCustomerPortalUrl(
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch subscription from LemonSqueezy");
+    const errorText = await response.text();
+    console.error("[LS_PORTAL] Subscription fetch failed:", response.status, errorText);
+    throw new Error(`Failed to fetch subscription from LemonSqueezy: ${response.status}`);
   }
 
   const data = await response.json();
-  return data.data.attributes.urls.customer_portal as string;
+  const portalUrl = data.data?.attributes?.urls?.customer_portal;
+
+  if (!portalUrl) {
+    console.error("[LS_PORTAL] No customer_portal URL in response:", JSON.stringify(data.data?.attributes?.urls));
+    throw new Error("LemonSqueezy did not return a portal URL. Your store may need to be activated.");
+  }
+
+  return portalUrl as string;
 }

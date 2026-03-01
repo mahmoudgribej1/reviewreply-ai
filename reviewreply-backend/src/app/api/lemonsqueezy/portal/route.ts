@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { verifyExtensionToken } from "@/lib/jwt";
-import { getCustomerPortalUrl } from "@/lib/lemonsqueezy";
+import { getCustomerPortalUrl, getActiveSubscriptionByEmail } from "@/lib/lemonsqueezy";
 
 /**
  * POST /api/lemonsqueezy/portal
@@ -45,19 +45,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!user.lsSubscriptionId) {
+    // ─── Resolve subscription ID ──────────────────
+    // If we don't have a subscriptionId stored (upgrade via order fallback),
+    // re-query LemonSqueezy to find and save it now.
+    let subscriptionId = user.lsSubscriptionId;
+
+    if (!subscriptionId) {
+      // Try to find subscription from LS API
+      const sub = await getActiveSubscriptionByEmail(userEmail);
+      if (sub) {
+        // Save it for next time
+        await prisma.user.update({
+          where: { email: userEmail },
+          data: {
+            lsSubscriptionId: sub.subscriptionId,
+            lsCustomerId: sub.customerId,
+            lsVariantId: sub.variantId,
+          },
+        });
+        subscriptionId = sub.subscriptionId;
+      }
+    }
+
+    if (!subscriptionId) {
       return NextResponse.json(
-        { error: "No active subscription found" },
+        { error: "No active subscription found. If you just upgraded, please wait a moment and try again." },
         { status: 400 }
       );
     }
 
     // ─── Get portal URL ───────────────────────────
-    const portalUrl = await getCustomerPortalUrl(user.lsSubscriptionId);
+    const portalUrl = await getCustomerPortalUrl(subscriptionId);
 
     return NextResponse.json({ portalUrl });
   } catch (error) {
-    console.error("[PORTAL_ERROR]", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[PORTAL_ERROR]", message);
+
+    // LemonSqueezy stores in test mode / not yet activated return errors
+    // for the portal URL endpoint. Surface a helpful message.
+    if (message.includes("Failed to fetch subscription")) {
+      return NextResponse.json(
+        { error: "Billing portal is not available yet. If your store is in test mode, activate it on LemonSqueezy first." },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to retrieve billing portal" },
       { status: 500 }
