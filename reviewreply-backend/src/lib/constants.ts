@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────
 
 /** Max AI reply generations per 30-day period on the Free plan */
-export const FREE_GENERATION_LIMIT = 30;
+export const FREE_GENERATION_LIMIT = 15;
 
 /** Business type options (used in onboarding + settings) */
 export const BUSINESS_TYPES = [
