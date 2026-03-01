@@ -63,12 +63,12 @@ export async function POST(request: Request) {
     }
 
     // ─── Find or create user ─────────────────
-    // Lowercase email for consistent matching (Google returns lowercase
-    // but NextAuth PrismaAdapter might have stored it differently)
+    // Normalize email to lowercase and do a case-insensitive lookup
+    // to match the record regardless of how NextAuth stored it.
     const email = profile.email.toLowerCase();
 
-    let user = await prisma.user.findUnique({
-      where: { email },
+    let user = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
       include: { businessProfile: true },
     });
 
@@ -122,6 +122,7 @@ export async function POST(request: Request) {
       token,
       user: {
         name: user.name,
+        businessName: user.businessProfile?.businessName ?? null,
         plan: user.plan,
         generationsUsed: user.generationsUsedThisMonth,
         generationsLimit:

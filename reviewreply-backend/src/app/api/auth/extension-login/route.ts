@@ -51,6 +51,7 @@ export async function POST(request: Request) {
       token,
       user: {
         name: user.name,
+        businessName: user.businessProfile?.businessName ?? null,
         plan: user.plan,
         generationsUsed: user.generationsUsedThisMonth,
         generationsLimit:

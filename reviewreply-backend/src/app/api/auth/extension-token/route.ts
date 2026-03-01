@@ -46,6 +46,7 @@ export async function GET() {
       token,
       user: {
         name: user.name,
+        businessName: user.businessProfile?.businessName ?? null,
         plan: user.plan,
         generationsUsed: user.generationsUsedThisMonth,
         generationsLimit:
