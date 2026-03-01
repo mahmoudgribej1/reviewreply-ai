@@ -73,8 +73,8 @@ function showState(state) {
 
 // ─── Render Logged In ────────────────────────
 function renderLoggedIn(user) {
-  // Show business name if set, fall back to personal name, then generic greeting
-  userName.textContent = user.businessName || user.name || "there";
+  // Show owner first name if set, fall back to personal name, then generic greeting
+  userName.textContent = user.ownerFirstName || user.name || "there";
 
   // Plan badge
   if (user.plan === "PRO") {

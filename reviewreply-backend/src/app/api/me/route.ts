@@ -52,6 +52,7 @@ export async function GET(request: Request) {
         name: user.name,
         email: user.email,
         businessName: user.businessProfile?.businessName ?? null,
+        ownerFirstName: user.businessProfile?.ownerFirstName ?? null,
         plan: user.plan,
         generationsUsed: user.generationsUsedThisMonth,
         generationsLimit:
