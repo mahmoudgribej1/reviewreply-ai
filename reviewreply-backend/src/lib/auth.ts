@@ -14,6 +14,17 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // Allow linking a Google account even when a credentials account
+      // with the same email already exists. Without this, NextAuth
+      // silently blocks the sign-in with an OAuthAccountNotLinked error.
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          // Always show the Google account picker, even if already signed in.
+          // Without this, Google silently reuses the last authenticated session.
+          prompt: "select_account",
+        },
+      },
     }),
 
     // ─── Email/Password (for extension + web login) ─
@@ -65,10 +76,27 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    // Include user ID and plan in the JWT token
-    async jwt({ token, user }) {
+    // Always allow sign-in. Without this explicit callback the
+    // PrismaAdapter can silently reject OAuth sign-ins when it
+    // encounters existing accounts, returning the user to /login
+    // with no error message (the "lottery" behaviour).
+    async signIn() {
+      return true;
+    },
+
+    // Include user ID and plan in the JWT token.
+    // When `account` is present it's a fresh sign-in — always
+    // refresh the token.id from the DB-resolved `user` object.
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+      }
+      // On OAuth sign-in the adapter resolves the real DB user,
+      // so always pick up the latest id even if it changed.
+      if (account && user) {
+        token.id = user.id;
+        token.email = user.email;
       }
       return token;
     },

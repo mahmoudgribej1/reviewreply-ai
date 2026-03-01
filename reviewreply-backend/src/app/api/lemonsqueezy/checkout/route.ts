@@ -27,10 +27,12 @@ export async function POST(request: Request) {
 
     if (!userEmail) {
       const session = await getServerSession(authOptions);
+      console.log("[CHECKOUT] session:", JSON.stringify(session?.user ?? null));
       userEmail = session?.user?.email ?? null;
     }
 
     if (!userEmail) {
+      console.log("[CHECKOUT] No user email found — returning 401");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -38,6 +40,8 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({
       where: { email: userEmail },
     });
+
+    console.log("[CHECKOUT] user plan:", user?.plan ?? "not found");
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Sign out any existing session first, wait for the cookie to
+  // actually be cleared, then start the fresh Google OAuth flow.
+  async function handleGoogleSignIn() {
+    try {
+      await signOut({ redirect: false });
+    } catch {
+      // signOut can throw if there's no active session — that's fine
+    }
+    // Small delay ensures the browser has flushed the old session cookie
+    // before the redirect to Google begins.
+    await new Promise((r) => setTimeout(r, 200));
+    await signIn("google", { callbackUrl: "/dashboard" });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -123,7 +137,7 @@ export default function LoginPage() {
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+              onClick={handleGoogleSignIn}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path

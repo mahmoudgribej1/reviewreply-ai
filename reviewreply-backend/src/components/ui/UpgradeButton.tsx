@@ -15,18 +15,27 @@ export default function UpgradeButton() {
     try {
       const res = await fetch("/api/lemonsqueezy/checkout", {
         method: "POST",
+        credentials: "include", // ensure session cookies are sent
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Something went wrong");
+        const msg = data.error || `Error ${res.status}`;
+        setError(msg);
+        console.error("[UpgradeButton] API error:", msg, data);
         return;
       }
 
-      // Open LemonSqueezy hosted checkout in the same tab
+      if (!data.checkoutUrl) {
+        setError("No checkout URL returned — check server logs");
+        return;
+      }
+
+      // Navigate to LemonSqueezy hosted checkout
       window.location.href = data.checkoutUrl;
-    } catch {
+    } catch (err) {
+      console.error("[UpgradeButton] Network error:", err);
       setError("Network error — please try again");
     } finally {
       setLoading(false);

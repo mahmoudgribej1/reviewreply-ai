@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -152,7 +152,11 @@ export default function SignupPage() {
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
+              onClick={async () => {
+                try { await signOut({ redirect: false }); } catch { /* no session */ }
+                await new Promise((r) => setTimeout(r, 200));
+                await signIn("google", { callbackUrl: "/onboarding" });
+              }}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path

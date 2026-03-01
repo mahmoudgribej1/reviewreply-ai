@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Sparkles } from "lucide-react";
+import { Sparkles, CheckCircle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,7 +14,11 @@ import UpgradeButton from "@/components/ui/UpgradeButton";
 
 const FREE_GENERATION_LIMIT = 10;
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { upgraded?: string };
+}) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
@@ -73,6 +77,26 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
           Welcome back, {user.businessProfile.ownerFirstName}!
         </h1>
+
+        {/* Show success banner after payment redirect */}
+        {searchParams.upgraded === "true" && user.plan === "PRO" && (
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+            <CheckCircle className="h-5 w-5 flex-shrink-0" />
+            <p className="text-sm font-medium">
+              You&apos;re now on the Pro plan! Enjoy unlimited AI reply generations.
+            </p>
+          </div>
+        )}
+
+        {/* Show processing banner if payment was made but webhook hasn't fired yet */}
+        {searchParams.upgraded === "true" && user.plan !== "PRO" && (
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+            <Sparkles className="h-5 w-5 flex-shrink-0" />
+            <p className="text-sm font-medium">
+              Payment received! Your Pro upgrade is being processed — refresh this page in a few seconds.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Usage Card */}
