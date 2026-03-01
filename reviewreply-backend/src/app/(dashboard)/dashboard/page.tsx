@@ -18,8 +18,9 @@ import { FREE_GENERATION_LIMIT } from "@/lib/constants";
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { upgraded?: string };
+  searchParams: Promise<{ upgraded?: string }>;
 }) {
+  const { upgraded } = await searchParams;
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
@@ -108,7 +109,7 @@ export default async function DashboardPage({
         </h1>
 
         {/* Success banner after payment */}
-        {searchParams.upgraded === "true" && user.plan === "PRO" && (
+        {upgraded === "true" && user.plan === "PRO" && (
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800">
             <CheckCircle className="h-5 w-5 flex-shrink-0" />
             <p className="text-sm font-medium">
@@ -118,7 +119,7 @@ export default async function DashboardPage({
         )}
 
         {/* Processing banner + auto-upgrade verifier */}
-        {searchParams.upgraded === "true" && user.plan !== "PRO" && (
+        {upgraded === "true" && user.plan !== "PRO" && (
           <>
             <UpgradeVerifier />
             <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
