@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
  * UpgradeVerifier
  *
  * Rendered on the dashboard when ?upgraded=true but user.plan is still FREE.
- * Polls /api/lemonsqueezy/verify-upgrade every 3 seconds (up to 10 attempts).
+ * Polls /api/gumroad/verify-upgrade every 3 seconds (up to 10 attempts).
  * When the API confirms the upgrade, does a hard router.refresh() so the
  * server component re-fetches the updated plan.
  */
@@ -22,7 +22,7 @@ export default function UpgradeVerifier() {
       attemptsRef.current += 1;
 
       try {
-        const res = await fetch("/api/lemonsqueezy/verify-upgrade", {
+        const res = await fetch("/api/gumroad/verify-upgrade", {
           method: "POST",
         });
         const data = await res.json();

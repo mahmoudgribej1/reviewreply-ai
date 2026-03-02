@@ -3,12 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { verifyExtensionToken } from "@/lib/jwt";
-import { createCheckout } from "@/lib/lemonsqueezy";
+import { buildCheckoutUrl } from "@/lib/gumroad";
 
 /**
- * POST /api/lemonsqueezy/checkout
+ * POST /api/gumroad/checkout
  *
- * Creates a LemonSqueezy hosted checkout session.
+ * Builds a Gumroad product checkout URL with the user's email pre-filled.
  * Returns { checkoutUrl } — the frontend opens this in a new tab.
  *
  * Auth: Bearer token (extension) or NextAuth session (dashboard)
@@ -55,8 +55,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // ─── Create checkout URL ─────────────────
-    const checkoutUrl = await createCheckout({
+    // ─── Build checkout URL ──────────────────
+    const checkoutUrl = buildCheckoutUrl({
       userEmail: user.email,
       userId: user.id,
     });

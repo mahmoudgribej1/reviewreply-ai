@@ -236,7 +236,7 @@ upgradeBtn.addEventListener("click", async () => {
 
   try {
     const { rr_token } = await chrome.storage.local.get(["rr_token"]);
-    const res = await fetch(`${API_URL}/api/lemonsqueezy/checkout`, {
+    const res = await fetch(`${API_URL}/api/gumroad/checkout`, {
       method: "POST",
       headers: { Authorization: `Bearer ${rr_token}` },
     });
@@ -262,7 +262,7 @@ manageBillingBtn.addEventListener("click", async () => {
 
   try {
     const { rr_token } = await chrome.storage.local.get(["rr_token"]);
-    const res = await fetch(`${API_URL}/api/lemonsqueezy/portal`, {
+    const res = await fetch(`${API_URL}/api/gumroad/portal`, {
       method: "POST",
       headers: { Authorization: `Bearer ${rr_token}` },
     });

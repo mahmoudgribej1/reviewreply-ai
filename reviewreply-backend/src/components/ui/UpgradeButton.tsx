@@ -13,7 +13,7 @@ export default function UpgradeButton() {
     setError(null);
 
     try {
-      const res = await fetch("/api/lemonsqueezy/checkout", {
+      const res = await fetch("/api/gumroad/checkout", {
         method: "POST",
         credentials: "include", // ensure session cookies are sent
       });
@@ -32,7 +32,7 @@ export default function UpgradeButton() {
         return;
       }
 
-      // Navigate to LemonSqueezy hosted checkout
+      // Navigate to Gumroad hosted checkout
       window.location.href = data.checkoutUrl;
     } catch (err) {
       console.error("[UpgradeButton] Network error:", err);

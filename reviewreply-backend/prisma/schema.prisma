@@ -67,9 +67,8 @@ model User {
   emailVerified            DateTime?
   image                    String?
   plan                     Plan      @default(FREE)
-  lsCustomerId             String?   // LemonSqueezy customer ID
-  lsSubscriptionId         String?   // LemonSqueezy subscription ID
-  lsVariantId              String?   // LemonSqueezy variant/product ID
+  gumroadSaleId            String?   // Gumroad sale ID
+  gumroadSubscriptionId    String?   // Gumroad subscription ID
   generationsUsedThisMonth Int       @default(0)
   generationsPeriodStart   DateTime  @default(now())
   createdAt                DateTime  @default(now())

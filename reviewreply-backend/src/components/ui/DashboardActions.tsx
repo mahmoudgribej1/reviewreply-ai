@@ -25,7 +25,8 @@ export function ManageBillingButton() {
   async function handleClick() {
     setLoading(true);
     try {
-      const res = await fetch("/api/lemonsqueezy/portal", {
+      const res = await fetch("/api/gumroad/portal", {
+        method: "POST",
         credentials: "include",
       });
       const data = await res.json();
