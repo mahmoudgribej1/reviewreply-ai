@@ -4,7 +4,6 @@ import {
   Chrome,
   MessageSquare,
   Zap,
-  Shield,
   CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -119,69 +118,28 @@ export default function HomePage() {
       <section className="px-4 py-20 bg-gray-50" id="pricing">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-4">
-            Simple pricing
+            Free to use
           </h2>
           <p className="text-center text-gray-500 mb-12">
-            Start free, upgrade when you need more.
+            No credit card required. Everything included.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Free */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Free</CardTitle>
-                <CardDescription>Perfect for trying it out</CardDescription>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
+          <div className="max-w-sm mx-auto">
+            <Card className="border-violet-300 shadow-lg">
+              <CardHeader className="text-center">
+                <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+                  <Sparkles className="h-5 w-5 text-violet-600" />
+                  Free
+                </CardTitle>
+                <CardDescription>Everything you need to get started</CardDescription>
+                <p className="text-4xl font-bold text-gray-900 mt-2">
                   $0<span className="text-base font-normal text-gray-400">/mo</span>
                 </p>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-gray-600 space-y-2 mb-6">
                   <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    30 AI replies per month
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    Chrome Extension access
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    Google Maps integration
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    Reply history
-                  </li>
-                </ul>
-                <Link href="/signup" className="block">
-                  <Button variant="outline" className="w-full">
-                    Get started
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Pro */}
-            <Card className="border-violet-300 shadow-lg relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-violet-600 text-white text-xs font-medium px-3 py-1 rounded-full">
-                  Most popular
-                </span>
-              </div>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  Pro <Sparkles className="h-4 w-4 text-violet-600" />
-                </CardTitle>
-                <CardDescription>For busy business owners</CardDescription>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  $9.99<span className="text-base font-normal text-gray-400">/mo</span>
-                </p>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm text-gray-600 space-y-2 mb-6">
-                  <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-violet-500 flex-shrink-0" />
-                    <strong>Unlimited</strong> AI replies
+                    AI reply generations
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-violet-500 flex-shrink-0" />
@@ -195,17 +153,9 @@ export default function HomePage() {
                     <CheckCircle className="h-4 w-4 text-violet-500 flex-shrink-0" />
                     Reply history
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-violet-500 flex-shrink-0" />
-                    Priority AI model
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-violet-500 flex-shrink-0" />
-                    Cancel anytime
-                  </li>
                 </ul>
                 <Link href="/signup" className="block">
-                  <Button className="w-full">Start free trial</Button>
+                  <Button className="w-full">Get started — it&apos;s free</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -221,9 +171,6 @@ export default function HomePage() {
             <span>© {new Date().getFullYear()} ReviewReply AI</span>
           </div>
           <div className="flex gap-6 text-sm text-gray-400">
-            <a href="#pricing" className="hover:text-gray-600">
-              Pricing
-            </a>
             <Link href="/login" className="hover:text-gray-600">
               Log in
             </Link>
