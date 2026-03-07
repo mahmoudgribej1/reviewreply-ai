@@ -2,8 +2,9 @@
 // Shared application constants
 // ─────────────────────────────────────────────
 
-/** Max AI reply generations per 30-day period on the Free plan */
-export const FREE_GENERATION_LIMIT = 15;
+/** Max AI reply generations per 30-day period on the Free plan.
+ * Set high while billing is disabled — effectively unlimited. */
+export const FREE_GENERATION_LIMIT = 1000;
 
 /** Business type options (used in onboarding + settings) */
 export const BUSINESS_TYPES = [

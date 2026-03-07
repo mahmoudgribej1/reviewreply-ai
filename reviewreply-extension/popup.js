@@ -86,22 +86,15 @@ function renderLoggedIn(user) {
   }
 
   // Usage
-  if (user.plan === "PRO") {
-    usageText.textContent = "Unlimited generations";
-    usageFill.style.width = "100%";
-  } else {
-    const used = user.generationsUsed || 0;
-    const limit = user.generationsLimit || 30;
-    usageText.textContent = `${used} of ${limit} generations used`;
-    usageFill.style.width = `${Math.min((used / limit) * 100, 100)}%`;
-  }
+  const used = user.generationsUsed || 0;
+  usageText.textContent = `${used} generation${used !== 1 ? "s" : ""} used this month`;
+  usageFill.style.width = "0%";
 
-  // Show/hide action buttons based on plan
+  // Billing currently disabled — keep upgrade button hidden for all plans
+  upgradeBtn.classList.add("hidden");
   if (user.plan === "PRO") {
-    upgradeBtn.classList.add("hidden");
     manageBillingBtn.classList.remove("hidden");
   } else {
-    upgradeBtn.classList.remove("hidden");
     manageBillingBtn.classList.add("hidden");
   }
 

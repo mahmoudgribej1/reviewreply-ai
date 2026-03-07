@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Sparkles, CheckCircle, Star, Clock, MessageSquare } from "lucide-react";
+import { Sparkles, Star, Clock, MessageSquare } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,17 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import UpgradeButton from "@/components/ui/UpgradeButton";
 import { SignOutButton, ManageBillingButton } from "@/components/ui/DashboardActions";
-import UpgradeVerifier from "@/components/ui/UpgradeVerifier";
-import { FREE_GENERATION_LIMIT } from "@/lib/constants";
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ upgraded?: string }>;
-}) {
-  const { upgraded } = await searchParams;
+export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
@@ -58,13 +50,6 @@ export default async function DashboardPage({
   const totalReplies = await prisma.replyHistory.count({
     where: { userId: user.id },
   });
-
-  const usagePercent =
-    user.plan === "PRO"
-      ? 0
-      : Math.round(
-          (user.generationsUsedThisMonth / FREE_GENERATION_LIMIT) * 100
-        );
 
   // Calculate reset date
   const resetDate = new Date(user.generationsPeriodStart);
@@ -108,28 +93,7 @@ export default async function DashboardPage({
           Welcome back, {user.businessProfile.ownerFirstName}!
         </h1>
 
-        {/* Success banner after payment */}
-        {upgraded === "true" && user.plan === "PRO" && (
-          <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800">
-            <CheckCircle className="h-5 w-5 flex-shrink-0" />
-            <p className="text-sm font-medium">
-              You&apos;re now on the Pro plan! Enjoy unlimited AI reply generations.
-            </p>
-          </div>
-        )}
 
-        {/* Processing banner + auto-upgrade verifier */}
-        {upgraded === "true" && user.plan !== "PRO" && (
-          <>
-            <UpgradeVerifier />
-            <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
-              <Sparkles className="h-5 w-5 flex-shrink-0" />
-              <p className="text-sm font-medium">
-                Payment received! Activating your Pro plan automatically…
-              </p>
-            </div>
-          </>
-        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Usage Card */}
@@ -137,30 +101,17 @@ export default async function DashboardPage({
             <CardHeader>
               <CardTitle className="text-lg">Usage this month</CardTitle>
               <CardDescription>
-                {user.plan === "PRO"
-                  ? "Unlimited generations on the Pro plan"
-                  : `${user.generationsUsedThisMonth} of ${FREE_GENERATION_LIMIT} free generations used`}
+                {user.generationsUsedThisMonth} generation{user.generationsUsedThisMonth !== 1 ? "s" : ""} used this month
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {user.plan === "PRO" ? (
-                <div className="flex items-center gap-2 text-sm text-violet-600">
-                  <Sparkles className="h-4 w-4" />
-                  <span>{totalReplies} total replies generated</span>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-violet-600 h-2.5 rounded-full transition-all"
-                      style={{ width: `${Math.min(usagePercent, 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    Resets in {daysUntilReset} day{daysUntilReset !== 1 ? "s" : ""}
-                  </p>
-                </div>
-              )}
+              <div className="flex items-center gap-2 text-sm text-violet-600">
+                <Sparkles className="h-4 w-4" />
+                <span>{totalReplies} total replies generated</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Counter resets in {daysUntilReset} day{daysUntilReset !== 1 ? "s" : ""}
+              </p>
             </CardContent>
           </Card>
 
@@ -216,28 +167,7 @@ export default async function DashboardPage({
             </CardContent>
           </Card>
 
-          {/* Upgrade Card — FREE users only */}
-          {user.plan !== "PRO" && (
-            <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-violet-600" />
-                  Upgrade to Pro
-                </CardTitle>
-                <CardDescription>
-                  Unlock unlimited AI reply generations for your business
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm text-gray-600 space-y-1 mb-4">
-                  <li>✅ Unlimited reply generations</li>
-                  <li>✅ Priority AI model</li>
-                  <li>✅ Cancel anytime</li>
-                </ul>
-                <UpgradeButton />
-              </CardContent>
-            </Card>
-          )}
+
         </div>
 
         {/* Recent Reply History */}

@@ -38,7 +38,6 @@ export async function POST(request: Request) {
   const email = params.get("email") ?? "";
   const saleId = params.get("sale_id") ?? "";
   const subscriptionId = params.get("subscription_id") ?? "";
-  const subscriptionId = params.get("subscription_id") ?? "";
   const orderNumber = params.get("order_number") ?? "";
 
   // URL params from checkout (our custom user_id)
