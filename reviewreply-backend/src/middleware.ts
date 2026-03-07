@@ -1,13 +1,32 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const PRODUCTION_HOST = "reviewreply-ai-hca9.vercel.app";
+
 /**
- * Middleware to add CORS headers for Chrome Extension requests.
- * The extension's origin is "chrome-extension://<extension-id>" which varies,
- * so we allow all origins for API routes the extension calls.
+ * Middleware to:
+ * 1. Redirect any Vercel preview deployment URL to the production domain.
+ *    This prevents OAuth redirect_uri_mismatch errors on preview builds.
+ * 2. Add CORS headers for Chrome Extension requests.
  */
 export function middleware(request: NextRequest) {
-  // Only apply to API routes
+  const host = request.headers.get("host") ?? "";
+
+  // If this is a Vercel preview URL (not the production host, but still on vercel.app),
+  // redirect to the same path on the production domain.
+  if (
+    host !== PRODUCTION_HOST &&
+    host.endsWith(".vercel.app") &&
+    !host.includes("localhost")
+  ) {
+    const url = request.nextUrl.clone();
+    url.host = PRODUCTION_HOST;
+    url.port = "";
+    url.protocol = "https:";
+    return NextResponse.redirect(url, 308); // 308 = Permanent Redirect
+  }
+
+  // Only apply CORS to API routes
   if (!request.nextUrl.pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
@@ -35,5 +54,8 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: [
+    // Match all routes for the preview → production redirect
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };
