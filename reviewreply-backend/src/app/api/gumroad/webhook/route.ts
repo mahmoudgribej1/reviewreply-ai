@@ -24,13 +24,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  console.log("[WEBHOOK] ─── Incoming Gumroad ping ───");
-
   // ─── 1. Parse form-encoded body ───────────
   const rawBody = await request.text();
   const params = new URLSearchParams(rawBody);
-
-  console.log("[WEBHOOK] Body length:", rawBody.length);
 
   const resourceName = params.get("resource_name") ?? "sale";
   const sellerId = params.get("seller_id") ?? "";
@@ -43,10 +39,7 @@ export async function POST(request: Request) {
   // URL params from checkout (our custom user_id)
   const userId = params.get("url_params[user_id]") ?? "";
 
-  console.log("[WEBHOOK] Event:", resourceName);
-  console.log("[WEBHOOK] email:", email, "userId:", userId);
-  console.log("[WEBHOOK] saleId:", saleId, "subscriptionId:", subscriptionId);
-  console.log("[WEBHOOK] seller_id:", sellerId, "permalink:", productPermalink, "order:", orderNumber);
+  console.log("[WEBHOOK] Event:", resourceName, "| order:", orderNumber);
 
   // ─── 2. Verify ping origin ────────────────
   const expectedSellerId = process.env.GUMROAD_SELLER_ID ?? "";
